@@ -1,0 +1,2075 @@
+---
+general:
+  neuron_gcp_platform_version: 1.8.908
+  tf_version: 0.14.4
+  google_terraform_version: 3.90.1
+  google_beta_terraform_version: 3.90.1
+  region: europe-west3
+  location: europe-west3
+
+modules:
+  - name: terraform_provider_base_dh_tf12
+  - name: oslogin_tf12
+  - name: datahub_project_iam_tf12
+  - name: datahub_v2_tf12
+
+    service_list:
+      - ca_vault
+      - ca_nifi
+      - ca_dataproc
+      - ca_bif
+      - ca_bif_comp2_proda
+      - nwp_vault
+      - nwp_dataproc
+      - nwp_nifi
+      - puz_nifi
+      - puz_vault
+      - mc2_nifi
+      - mc2_compute_dataproc
+      - mc2_enterprise_nifi
+      - mc2_enterprise_dataproc
+
+    storage_types:
+      meta:
+        permissions:
+          readers:
+            - group:gcp-vf-grp-neuron-bq-meta-table-viewer@vodafone.com
+            - group:gcp-vf-de-ca-de-bq-lab@vodafone.com
+            - group:gcp-vf-de-ca-de-bq-live@vodafone.com
+            - group:gcp-vf-de-ca-de-bq-nonlive@vodafone.com
+            - group:gcp-vf-de-ca-ds-bq-lab@vodafone.com
+            - group:gcp-vf-de-ca-ds-bq-live@vodafone.com
+            - group:gcp-vf-de-ca-ds-bq-nonlive@vodafone.com
+          owners:
+            - group:gcp-vf-de-ca-ops-bq@vodafone.com
+      smoketest:
+        permissions:
+          readers:
+            - group:gcp-vf-de-ca-dataengineers@vodafone.com
+          writers:
+            - group:gcp-vf-de-devops@vodafone.com
+            - serviceAccount:vf-de-ca-dh-dynofi-ing-smk-sa@vf-de-datahub.iam.gserviceaccount.com
+
+
+
+      processed_mc2_bq:
+        permissions: &big_query_permissions_mc2
+          readers:
+            # nonlive
+            - serviceAccount:vf-de-mc2cp-dev-dp-ds-sa@vf-grp-mc2compute-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-mc2cp-qa-dp-ds-sa@vf-grp-mc2compute-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-mc2cp-preprod-dp-ops-sa@vf-grp-mc2compute-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-mc2et-dev-dp-ds-sa@vf-grp-mc2compute-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-mc2et-qa-dp-ds-sa@vf-grp-mc2compute-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-mc2et-preprod-dp-ops-sa@vf-grp-mc2compute-nonlive.iam.gserviceaccount.com
+            # live
+            - serviceAccount:vf-de-mc2cp-proda-dp-ops-sa@vf-grp-mc2compute-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-mc2cp-prodb-dp-ops-sa@vf-grp-mc2compute-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-mc2et-proda-dp-ops-sa@vf-grp-mc2compute-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-mc2et-prodb-dp-ops-sa@vf-grp-mc2compute-live.iam.gserviceaccount.com
+            # qlik
+            - serviceAccount:bq-de-mc2@vf-grp-ngbi-pprd-svcs-01.iam.gserviceaccount.com
+            - serviceAccount:bq-de-mc2@vf-grp-ngbi-prd-svcs-01.iam.gserviceaccount.com
+
+      #######################
+      ##
+      ## Definition of "groups" we want to use in this datahub definition file
+      ##
+      #######################
+
+      # Service Accounts create for Services in all project managed by VF-DE FBE
+      grp_all_sa_gcs_readers:
+        permissions: &grp_all_sa_gcs_readers
+          readers:
+            #dataproc
+            - serviceAccount:vf-de-ca-qa-dp-ds-sa@vf-de-ca-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-dev-dp-ds-sa@vf-de-ca-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-dev-dp-ds-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-qa-dp-ds-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-train-dev-dp-ds-sa@vf-de-train-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-train-qa-dp-ds-sa@vf-de-train-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ita-dev-dp-ds-sa@vf-de-ita-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ita-qa-dp-ds-sa@vf-de-ita-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-hra-dev-dp-ds-sa@vf-de-hra-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-hra-qa-dp-ds-sa@vf-de-hra-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ebu-dev-dp-ds-sa@vf-de-ebu-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ebu-qa-dp-ds-sa@vf-de-ebu-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-tnw-qa-dp-ds-sa@vf-de-tnw-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-tnw-dev-dp-ds-sa@vf-de-tnw-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-cop-dev-dp-ds-sa@vf-de-cop-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-fba-dev-dp-ds-sa@vf-de-fba-lab.iam.gserviceaccount.com
+            #datafusion
+            - serviceAccount:vf-de-ngbi-dev-datafusion-sa@vf-de-ngbi-dev-gen-01.iam.gserviceaccount.com
+            #composer
+            - serviceAccount:vf-de-ca-dev-comp-sa@vf-de-ca-lab.iam.gserviceaccount.com
+            #groups
+            - group:gcp-vf-de-ca-datasciencecds@vodafone.com
+
+      # Service Accounts created for Services in CA-LIVE project
+      grp_live_sa_gcs_writers:
+        permissions: &grp_live_sa_gcs_writers
+          writers:
+            #dataproc
+            - serviceAccount:vf-de-ca-prodb-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-proda-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+
+            - group:gcp-vf-de-devops@vodafone.com
+
+      # general permissions for datasets
+      processed_ca_bq:
+        permissions: &big_query_permissions_ca
+          readers:
+            - group:gcp-vf-de-ca-de-bq-lab@vodafone.com
+            - group:gcp-vf-de-ca-de-bq-live@vodafone.com
+            - group:gcp-vf-de-ca-de-bq-nonlive@vodafone.com
+            - group:gcp-vf-de-ca-ds-bq-lab@vodafone.com
+            - group:gcp-vf-de-ca-ds-bq-live@vodafone.com
+            - group:gcp-vf-de-ca-ds-bq-nonlive@vodafone.com
+            - group:gcp-vf-de-ca-hr-analytics@vodafone.com
+            - group:gcp-vf-de-ca-insights-analytics@vodafone.com
+            - group:gcp-vf-de-ca-cops-predictive-service@vodafone.com
+            - group:gcp-vf-de-ita-ds-admin@vodafone.com
+            - serviceAccount:vf-de-ca-dev-dp-ds-sa@vf-de-ca-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ebu-dev-dp-ds-sa@vf-de-ebu-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-tnw-dev-dp-ds-sa@vf-de-tnw-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-tnw-dev-comp-sa@vf-de-tnw-lab.iam.gserviceaccount.com
+            - serviceAccount:de-tnw-dev-comp2-sa@vf-de-tnw-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-dev-dp-ds-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-dev-df-de-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-dev-comp-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-qa-dp-ds-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-qa-df-de-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-qa-comp-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-qa-gke-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ngbi-dev-datafusion-sa@vf-de-ngbi-dev-gen-01.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-dev-comp-sa@vf-de-ca-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-fba-dev-dp-ds-sa@vf-de-fba-lab.iam.gserviceaccount.com
+            - serviceAccount:de-ca-dev-comp2-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+          owners:
+            - group:gcp-vf-de-ca-ops-bq@vodafone.com
+            - serviceAccount:vf-de-ca-proda-comp-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-prodb-comp-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:de-ca-proda-comp2-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-deployment-jenkins-sa@vf-de-ca-live.iam.gserviceaccount.com
+
+
+
+      #permission set for staging datasets like scd or san
+      staging_ca_bq:
+        permissions: &big_query_staging_permissions_ca
+          readers:
+            - group:gcp-vf-de-ca-dataengineers@vodafone.com
+            - group:gcp-vf-de-ca-datasciencecds-staging@vodafone.com
+            - serviceAccount:vf-de-ca-dev-comp-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-dev-df-de-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-dev-dp-ds-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-qa-comp-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-qa-df-de-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-qa-dp-ds-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:de-ca-dev-comp2-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+          writers:
+            - group:gcp-vf-de-devops@vodafone.com
+            - serviceAccount:vf-de-ca-proda-comp-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-prodb-comp-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:de-ca-proda-comp2-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-proda-df-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-prodb-df-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-proda-df-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-deployment-jenkins-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-prodb-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-proda-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+          owners:
+            - serviceAccount:vf-de-ca-prodb-comp-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:de-ca-proda-comp2-sa@vf-de-ca-live.iam.gserviceaccount.com
+
+      #######################
+      ##
+      ## End Definition of "groups"
+      ##
+      #######################
+
+      inputoutput_ca:
+        storage:
+          buckets:
+            - name: de-modeloutput
+            - name: de-github
+        permissions:
+          '<<1': *grp_all_sa_gcs_readers
+          '<<2': *grp_live_sa_gcs_writers
+          readers:
+            - serviceAccount:vf-de-ca-qa-comp-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:de-ca-dev-comp2-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+          writers:
+            - serviceAccount:vf-de-ca-proda-df-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-prodb-df-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-prodb-comp-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:de-ca-proda-comp2-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-deployment-jenkins-sa@vf-de-ca-live.iam.gserviceaccount.com
+
+      vfde-modeloutput:
+        storage:
+          buckets:
+            - name: vfde-nifi-archive
+              lifecycle_rules:
+              - action: Delete
+                conditions:
+                  age: 180
+        permissions:
+          owners:
+            - serviceAccount:vf-de-ca-dh-nifi-pub-usr-sa@vf-de-datahub.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-dh-nifi-ing-usr-sa@vf-de-datahub.iam.gserviceaccount.com
+
+
+      testdata:
+        permissions:
+          readers:
+            - serviceAccount:vf-de-ebu-dev-dp-ds-sa@vf-de-ebu-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ebu-qa-dp-ds-sa@vf-de-ebu-lab.iam.gserviceaccount.com
+          owners:
+            - serviceAccount:vf-de-ca-dh-nifi-pub-usr-sa@vf-de-datahub.iam.gserviceaccount.com
+
+      rawingest:
+        permissions:
+          writers:
+            - group:gcp-vf-de-ca-ops-datahub@vodafone.com
+            #give the storage transfer service in eds-live project permission to write data into datahub
+            - serviceAccount:project-1004258982566@storage-transfer-service.iam.gserviceaccount.com
+            #temporary permission for reprocessing of files
+            #- serviceAccount:vf-de-ca-prodb-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-dh-dynofi-ing-prd-sa@vf-de-datahub.iam.gserviceaccount.com
+
+      rawingest_bit:
+        storage:
+          buckets:
+            - name: bit-rawingested
+        permissions:
+          writers:
+            - serviceAccount:vf-de-ngbi-dh-dyn-debi-sa@vf-de-datahub.iam.gserviceaccount.com
+            - group:gcp-vf-de-devops@vodafone.com
+
+      rawingest_nwp:
+        storage:
+          buckets:
+            - name: nwp-rawingested
+        permissions:
+          readers:
+            - serviceAccount:vf-de-nwp-dev-dp-ds-sa@vf-de-nwp-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-tnw-dev-dp-ds-sa@vf-de-tnw-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-dev-dp-ds-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-qa-dp-ds-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-qa-comp-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:de-ca-dev-comp2-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+          writers:
+            - group:gcp-vf-de-nwp-ops-datahub@vodafone.com
+            - serviceAccount:vf-de-nwp-proda-comp-sa@vf-de-nwp-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-nwp-prodb-comp-sa@vf-de-nwp-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-nwp-proda-df-ops-sa@vf-de-nwp-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-nwp-prodb-df-ops-sa@vf-de-nwp-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-dh-nifi-ing-usr-sa@vf-de-datahub.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-proda-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-prodb-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-proda-df-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-prodb-df-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-proda-comp-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-prodb-comp-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:de-ca-proda-comp2-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-dh-dynofi-ing-prd-sa@vf-de-datahub.iam.gserviceaccount.com
+
+      processed_nwp:
+        storage:
+          buckets:
+            - name: nwp-modeloutput
+        permissions:
+          '<<1': *grp_all_sa_gcs_readers
+          '<<2': *grp_live_sa_gcs_writers
+          readers:
+            - group:gcp-vf-de-nwp-tableau-user@vodafone.com
+            - serviceAccount:vf-de-ca-proda-comp-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-prodb-comp-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:de-ca-proda-comp2-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:de-ca-dev-comp2-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-proda-df-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-prodb-df-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-proda-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-prodb-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+          writers:
+            - serviceAccount:vf-de-nwp-proda-comp-sa@vf-de-nwp-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-nwp-prodb-comp-sa@vf-de-nwp-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-deployment-jenkins-sa@vf-de-ca-live.iam.gserviceaccount.com
+
+      processed_ca_nwp_bq:
+        permissions: &big_query_permissions_ca_nwp
+          readers:
+            - group:gcp-vf-de-ca-de-bq-lab@vodafone.com
+            - group:gcp-vf-de-ca-de-bq-live@vodafone.com
+            - group:gcp-vf-de-ca-de-bq-nonlive@vodafone.com
+            - group:gcp-vf-de-ca-ds-bq-lab@vodafone.com
+            - group:gcp-vf-de-ca-ds-bq-live@vodafone.com
+            - group:gcp-vf-de-ca-ds-bq-nonlive@vodafone.com
+            - group:gcp-vf-de-nwp-de-bq-nonlive@vodafone.com
+            - group:gcp-vf-de-nwp-ds-bq-nonlive@vodafone.com
+          owners:
+            - group:gcp-vf-de-ca-ops-bq@vodafone.com
+            - group:gcp-vf-de-nwp-ops-bq@vodafone.com
+        bigquery:
+          datasets:
+            - name: lake_application-processed_s
+
+      processed_nwp_bq:
+        permissions: &big_query_permissions_nwp
+          readers:
+            - group:gcp-vf-de-nwp-de-bq-nonlive@vodafone.com
+            - group:gcp-vf-de-nwp-ds-bq-nonlive@vodafone.com
+            - group:gcp-vf-de-nwp-tableau-user@vodafone.com
+          writers:
+            - serviceAccount:vf-de-nwp-proda-comp-sa@vf-de-nwp-live.iam.gserviceaccount.com
+          owners:
+            - group:gcp-vf-de-nwp-ops-bq@vodafone.com
+        bigquery:
+          datasets:
+            - name: lake_nwp_modeloutput_s
+
+      rawprepared_ca:
+        storage:
+          buckets:
+            - name: errors
+            - name: trash
+              lifecycle_rules:
+              - action: Delete
+                conditions:
+                  age: 7
+
+      parquet_buckets:
+        storage:
+          buckets:
+            - name: cab-rawprepared
+            - name: dsl-rawprepared
+            - name: uni-rawprepared
+        permissions:
+          '<<1': *grp_all_sa_gcs_readers
+          '<<2': *grp_live_sa_gcs_writers
+
+
+      rawprepared_ca_nwp_custom:
+        permissions: &rawprepared_ca_nwp_custom
+          writers:
+            - serviceAccount:vf-de-nwp-proda-df-ops-sa@vf-de-nwp-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-nwp-prodb-df-ops-sa@vf-de-nwp-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-nwp-proda-comp-sa@vf-de-nwp-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-nwp-prodb-comp-sa@vf-de-nwp-live.iam.gserviceaccount.com
+          readers:
+            - serviceAccount:vf-de-ebu-dev-dp-ds-sa@vf-de-ebu-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ebu-qa-dp-ds-sa@vf-de-ebu-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-cont-nwp-dev-dp-ds-sa@vf-continual-nwp-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-cont-nwp-qa-dp-ds-sa@vf-continual-nwp-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-cont-nwp-preprod-dp-ops-sa@vf-continual-nwp-nonlive.iam.gserviceaccount.com
+            #proda was disable in the vf-continual-nwp-live project on 2022-03-25
+            #- serviceAccount:vf-cont-nwp-proda-dp-ops-sa@vf-continual-nwp-live.iam.gserviceaccount.com
+        storage:
+          buckets:
+            - name: mob-rawprepared
+            - name: con-rawprepared
+
+      rawprepared_ca_bq:
+        permissions:
+          '<<1': *big_query_permissions_ca
+          '<<2': *big_query_permissions_mc2
+        bigquery:
+          datasets:
+            - name: lake_mob_billing_rawprepared_s
+              authorized_views:
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.bill_base_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.billing_account_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.er_transaction_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.memo_v
+            - name: lake_mob_campaign_rawprepared_s
+            - name: lake_mob_crawler_rawprepared_s
+            - name: lake_mob_customerinteraction_rawprepared_s
+              authorized_views:
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.interaction_content_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.ivr_concern_v
+            - name: lake_mob_enterprise_rawprepared_s
+            - name: lake_mob_public_rawprepared_s
+            - name: lake_mob_usage_rawprepared_s
+              authorized_views:
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.billed_usage_v
+            - name: lake_mob_webanalytics_rawprepared_s
+            - name: lake_cab_billing_rawprepared_s
+            - name: lake_cab_campaign_rawprepared_s
+            - name: lake_cab_cdr_rawprepared_s
+            - name: lake_cab_crawler_rawprepared_s
+            - name: lake_cab_customer_rawprepared_s
+              authorized_views:
+                - vf-de-datahub.vfde_dh_mart_qualytics_v.cab_customer_alida_extract_member_profiles
+                - vf-de-datahub.vfde_dh_mart_qualytics_v.cab_customer_hardware_hist
+                - vf-de-datahub.vfde_dh_mart_qualytics_v.cab_customer_f_produkt_hist
+                - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.v_churn_order_entry_v
+                - vf-de-datahub.vfde_dh_lake_aib_cmr_rcd_data_v.f_produkt_hist_v2
+                - vf-de-datahub.vfde_dh_lake_aib_cmr_rcd_data_v.chh_cable
+            - name: lake_cab_customerinteraction_rawprepared_s
+              authorized_views:
+                - vf-de-datahub.vfde_dh_mart_qualytics_v.cab_customerinteraction_alida_activities_question_groups
+                - vf-de-datahub.vfde_dh_mart_qualytics_v.cab_customerinteraction_alida_activities_metadata
+                - vf-de-datahub.vfde_dh_mart_qualytics_v.cab_customerinteraction_alida_activities_answers
+                - vf-de-datahub.vfde_dh_mart_qualytics_v.cab_customerinteraction_alida_activities_answer_values
+                - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.edsp_ta_auftrag_kopfdaten_v
+                - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.edsp_ta_auftrag_netzdaten_v
+            - name: lake_cab_datamart_rawprepared_s
+            - name: lake_cab_enterprise_rawprepared_s
+            - name: lake_cab_network_rawprepared_s
+              authorized_views:
+                - vf-de-datahub.vfde_dh_mart_qualytics_v.cab_network_dns
+                - vf-de-datahub.vfde_dh_mart_qualytics_v.cab_network_dns_agg
+                - vf-de-datahub.vfde_dh_mart_qualytics_v.cab_network_udp
+                - vf-de-datahub.vfde_dh_mart_qualytics_v.cab_network_twamp
+                - vf-de-datahub.vfde_dh_mart_qualytics_v.cab_network_twamp_agg
+                - vf-de-datahub.vfde_dh_mart_qualytics_v.cab_network_iperf_upload
+                - vf-de-datahub.vfde_dh_mart_qualytics_v.cab_network_iperf_download
+                - vf-de-datahub.vfde_dh_mart_qualytics_v.cab_network_iperf_load
+                - vf-de-datahub.vfde_dh_mart_qualytics_v.cab_network_c20_nraw_000_h0
+                - vf-de-datahub.vfde_dh_mart_qualytics_v.cab_network_dim_macadress_torep_hist
+                - vf-de-datahub.vfde_dh_mart_qualytics_v.cab_network_technical_details
+            - name: lake_cab_public_rawprepared_s
+            - name: lake_cab_reference_rawprepared_s
+              authorized_views:
+                - vf-de-datahub.vfde_dh_mart_qualytics_v.cab_reference_mdm_vermarktbarkeit_hist
+                - vf-de-datahub.vfde_dh_mart_qualytics_v.cab_reference_lu_cip_band_width
+                - vf-de-datahub.vfde_dh_mart_qualytics_v.cab_reference_lu_hardware
+                - vf-de-datahub.vfde_dh_mart_qualytics_v.cab_reference_kip_lookup_product_price
+                - vf-de-datahub.vfde_dh_lake_aib_cmr_rcd_data_v.lu_cip_band_width
+                - vf-de-datahub.vfde_dh_lake_aib_cmr_rcd_data_v.kip_lookup_product_price_v2
+            - name: lake_cab_retail_rawprepared_s
+            - name: lake_cab_usage_rawprepared_s
+            - name: lake_cab_webanalytics_rawprepared_s
+            - name: lake_con_billing_rawprepared_s
+            - name: lake_con_campaign_rawprepared_s
+              authorized_views:
+              - vf-de-datahub.vfde_dh_lake_aib_cmr_clp_data_v.grp_campaign
+              - vf-de-datahub.vfde_dh_lake_aib_cmr_clp_data_v.grp_firms
+              - vf-de-datahub.vfde_dh_lake_aib_cmr_clp_data_v.grp_preferences
+              - vf-de-datahub.vfde_dh_lake_aib_cmr_clp_data_v.grp_segments
+              - vf-de-datahub.vfde_dh_lake_aib_cmr_clp_data_v.grp_stores
+              - vf-de-datahub.vfde_dh_lake_aib_cmr_clp_data_v.grp_category
+            - name: lake_con_cdr_rawprepared_s
+            - name: lake_con_crawler_rawprepared_s
+            - name: lake_con_customer_rawprepared_s
+              authorized_views:
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.croco_takes_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.dimension_base_customer_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_clp_data_v.transaction_ulff_data_hpe_raw_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_rcd_data_v.chh_aggregation
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_chn_data_v.chh_aggregation
+               - vf-de-datahub.vfde_dh_mart_nps_model_v.chh_aggregation
+            - name: lake_con_datamart_rawprepared_s
+            - name: lake_con_enterprise_rawprepared_s
+            - name: lake_con_network_rawprepared_s
+              authorized_views:
+               - vf-de-datahub.vfde_dh_lake_tbl_futurize_data_v.futurize_dm_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_rcd_data_v.breitbandatlas_bandwidth_availability_ads
+               - vf-de-datahub.vfde_dh_mart_fixed_kpi_monitoring_v.tnpm_cpe
+               - vf-de-datahub.vfde_dh_mart_fixed_kpi_monitoring_v.tnpm_cmts_us
+            - name: lake_con_reference_rawprepared_s
+              authorized_views:
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.match_resource_key_v
+            - name: lake_con_retail_rawprepared_s
+            - name: lake_con_usage_rawprepared_s
+            - name: lake_con_webanalytics_rawprepared_s
+            - name: lake_con_operational_rawprepared_s
+            - name: lake_dsl_billing_rawprepared_s
+            - name: lake_dsl_campaign_rawprepared_s
+            - name: lake_dsl_cdr_rawprepared_s
+            - name: lake_dsl_crawler_rawprepared_s
+            - name: lake_dsl_customer_rawprepared_s
+              authorized_views:
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.nps_cs_base_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.deaktivierungen_eingaben_fn_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_rcd_data_v.chh_dsl
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_rcd_data_v.wln_dv_subscription_derived
+            - name: lake_dsl_customerinteraction_rawprepared_s
+            - name: lake_dsl_datamart_rawprepared_s
+            - name: lake_dsl_enterprise_rawprepared_s
+            - name: lake_dsl_network_rawprepared_s
+            - name: lake_dsl_public_rawprepared_s
+            - name: lake_dsl_reference_rawprepared_s
+            - name: lake_dsl_retail_rawprepared_s
+            - name: lake_dsl_usage_rawprepared_s
+              authorized_views:
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_rcd_data_v.wln_fv_subscr_usage_agg_m
+            - name: lake_dsl_webanalytics_rawprepared_s
+            - name: lake_uni_billing_rawprepared_s
+            - name: lake_uni_campaign_rawprepared_s
+            - name: lake_uni_cdr_rawprepared_s
+            - name: lake_uni_crawler_rawprepared_s
+            - name: lake_uni_customer_rawprepared_s
+              authorized_views:
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_rcd_data_v.chh_unity
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_chn_data_v.chh_unity
+               - vf-de-datahub.vfde_dh_mart_nps_model_v.chh_unity
+            - name: lake_uni_customerinteraction_rawprepared_s
+              authorized_views:
+               - vf-de-datahub.vfde_dh_mart_nps_model_v.vita_priv_survey
+            - name: lake_uni_datamart_rawprepared_s
+            - name: lake_uni_enterprise_rawprepared_s
+            - name: lake_uni_network_rawprepared_s
+              authorized_views:
+               - vf-de-datahub.vfde_dh_mart_tdq_v.pea_account_cooked_v
+               - vf-de-datahub.vfde_dh_mart_tdq_v.pea_account_overall_v
+               - vf-de-datahub.vfde_dh_mart_tdq_v.pea_account_raw_v
+               - vf-de-datahub.vfde_dh_mart_tdq_v.customer_account_overall_v
+               - vf-de-datahub.vfde_dh_mart_tdq_v.cpe_port_attributes_v
+               - vf-de-datahub.vfde_dh_mart_tdq_v.port_node_kfs_daily_v
+               - vf-de-datahub.vfde_dh_mart_tdq_v.port_node_active_cust_hourly_v
+               - vf-de-datahub.vfde_dh_mart_nps_model_v.cpe_port_attributes
+            - name: lake_uni_public_rawprepared_s
+            - name: lake_uni_reference_rawprepared_s
+            - name: lake_uni_retail_rawprepared_s
+            - name: lake_uni_usage_rawprepared_s
+            - name: lake_uni_webanalytics_rawprepared_s
+            - name: lake_errors_s
+
+
+      rawprepared_output_custom:
+        bigquery:
+          datasets:
+            - name: lake_de_modeloutput_s
+            - name: lake_de_mob_datamart_s
+              authorized_views:
+               - vf-de-datahub.vfde_dh_mart_nps_model_v.car_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.car_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_rcd_data_v.car
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_chn_data_v.car
+            - name: lake_de_dsl_datamart_s
+            - name: lake_de_cab_datamart_s
+            - name: lake_de_uni_datamart_s
+              authorized_views:
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.um_car_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_rcd_data_v.um_car
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_chn_data_v.um_car
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_chn_data_v.label_churn
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_chn_data_v.churn_order_entry
+               - vf-de-datahub.vfde_dh_mart_nps_model_v.um_car
+               - vf-de-datahub.vfde_dh_mart_nps_model_v.kip_cpe
+               - vf-de-datahub.vfde_dh_mart_nps_model_v.kip_cpe_hist
+            - name: lake_de_con_datamart_s
+              authorized_views:
+              #has to be deleted by end of 2022
+               - vf-de-ca-lab.geomarketing.shop_data
+        permissions:
+          "<<": *big_query_permissions_ca
+          writers:
+            - serviceAccount:vf-de-ca-prodb-comp-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:de-ca-proda-comp2-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-proda-comp-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-proda-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-prodb-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-proda-df-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-prodb-df-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - group:gcp-vf-de-devops@vodafone.com
+
+      rawprepared_output_tmp_custom:
+        bigquery:
+          datasets:
+            - name: lake_tmp48h_s
+              expiration: 172800000
+        permissions:
+          "<<": *big_query_permissions_ca
+          writers:
+            - serviceAccount:vf-de-ca-prodb-comp-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:de-ca-proda-comp2-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-proda-comp-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-proda-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-prodb-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-proda-df-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-prodb-df-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - group:gcp-vf-de-devops@vodafone.com
+
+      rawprepared_staging_bq_custom:
+        permissions: *big_query_staging_permissions_ca
+        bigquery:
+          datasets:
+            - name: lake_scd_staging_s
+            - name: lake_san_staging_s
+
+      rawprepared_security_bq_custom:
+        bigquery:
+          datasets:
+            - name: lake_sec_staging_s
+        permissions:
+          writers:
+            - serviceAccount:vf-de-ca-prodb-comp-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:de-ca-proda-comp2-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-proda-comp-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-proda-df-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-prodb-df-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-deployment-jenkins-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - group:gcp-vf-de-devops@vodafone.com
+
+      rawprepared_nwp_bq_custom:
+        bigquery:
+          datasets:
+            - name: lake_mob_network_upm_rawprepared_s
+          key_type: bq
+        permissions:
+          readers:
+            - serviceAccount:vf-de-nwp-proda-df-ops-sa@vf-de-nwp-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-nwp-prodb-df-ops-sa@vf-de-nwp-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-nwp-dev-dp-ds-sa@vf-de-nwp-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-nwp-preprod-dp-ops-sa@vf-de-nwp-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-nwp-qa-dp-ds-sa@vf-de-nwp-nonlive.iam.gserviceaccount.com
+            - group:gcp-vf-de-ca-de-bq-lab@vodafone.com
+            - group:gcp-vf-de-ca-de-bq-live@vodafone.com
+            - group:gcp-vf-de-ca-de-bq-nonlive@vodafone.com
+            - group:gcp-vf-de-ca-ds-bq-lab@vodafone.com
+            - group:gcp-vf-de-ca-ds-bq-live@vodafone.com
+            - group:gcp-vf-de-ca-ds-bq-nonlive@vodafone.com
+            - serviceAccount:vf-de-ca-dev-comp-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-qa-comp-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:de-ca-dev-comp2-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-dev-dp-ds-sa@vf-de-ca-lab.iam.gserviceaccount.com
+          writers:
+            - serviceAccount:vf-de-nwp-proda-df-ops-sa@vf-de-nwp-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-nwp-prodb-df-ops-sa@vf-de-nwp-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-nwp-proda-dp-ops-sa@vf-de-nwp-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-nwp-prodb-dp-ops-sa@vf-de-nwp-live.iam.gserviceaccount.com
+
+      rawprepared_ca_nwp_bq_custom:
+        bigquery:
+          datasets:
+            - name: lake_mob_network_rawprepared_s
+              authorized_views:
+               - vf-de-datahub.vfde_dh_mart_tma_v.tma_agg_data
+               - vf-de-datahub.vfde_dh_mart_aiaas_v.cell_inventory_nwp
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.geo_footprint_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_rcd_data_v.mob_rv_ban_to_kgs44
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_rcd_data_v.geo_footprint
+            - name: lake_mob_customer_rawprepared_s
+              authorized_views:
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.credit_history_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.client_subscriber_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.subscriber_all_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.csm_activity_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.customer_complaint_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.deactivation_request_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.deakt_grund_ref_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.mnp_request_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.subscriber_service_agreement_v
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_rcd_data_v.chh_mobile
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_rcd_data_v.subscriber_mapping
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_rcd_data_v.client_subscriber
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_rcd_data_v.client_contract
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_rcd_data_v.seg_tn_all
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_rcd_data_v.perm_pref
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_chn_data_v.chh_mobile
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_chn_data_v.client_subscriber
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_chn_data_v.client_contract
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_chn_data_v.seg_tn_all
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_chn_data_v.perm_pref
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_chn_data_v.deactivation_request
+               - vf-de-datahub.vfde_dh_lake_celonis_dmz_transfer_v.celonis_contacts_case_exp_v
+               - vf-de-datahub.vfde_dh_lake_celonis_dmz_transfer_v.celonis_contacts_events_exp_v
+               - vf-de-datahub.vfde_dh_lake_celonis_dmz_transfer_v.celonis_nps_exp_v
+            - name: lake_con_public_rawprepared_s
+            - name: lake_datamart_rawprepared_s
+            - name: lake_mob_cdr_rawprepared_s
+              authorized_views:
+               - vf-de-datahub.vfde_dh_mart_aiaas_v.actixone_ericsson_aiaas
+            - name: lake_mob_datamart_rawprepared_s
+              authorized_views:
+               - vf-de-datahub.vfde_dh_mart_nps_model_v.nps_question_v
+               - vf-de-datahub.vfde_dh_mart_nps_model_v.nps_reply_v
+            - name: lake_con_customerinteraction_rawprepared_s
+              authorized_views:
+               - vf-de-datahub.vfde_dh_lake_aib_cmr_mat_data_v.genesys_v
+        permissions:
+          "<<1": *big_query_permissions_ca
+          "<<2": *big_query_permissions_mc2
+          readers:
+            - serviceAccount:vf-de-ca-dev-dp-ds-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-qa-dp-ds-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-dev-dp-ds-sa@vf-de-ca-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-proda-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-prodb-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - group:gcp-vf-de-ngbi-tst-gen-01-dataengineer@vodafone.com
+            - group:gcp-vf-grp-mc2-datateam@vodafone.com
+          writers:
+            - serviceAccount:vf-de-nwp-proda-df-ops-sa@vf-de-nwp-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-nwp-prodb-df-ops-sa@vf-de-nwp-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-nwp-proda-comp-sa@vf-de-nwp-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-nwp-prodb-comp-sa@vf-de-nwp-live.iam.gserviceaccount.com
+
+      rawprepared_ca_gke_bq_custom:
+        bigquery:
+          datasets:
+            - name: lake_mob_reference_rawprepared_s
+            - name: lake_mob_retail_rawprepared_s
+        permissions:
+          "<<1": *big_query_permissions_ca
+          "<<2": *big_query_permissions_mc2
+          readers:
+            - serviceAccount:vf-de-ca-qa-gke-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-dev-dp-ds-sa@vf-de-ca-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-dev-dp-ds-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-qa-dp-ds-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-preprod-dp-ops-sa@vf-de-ca-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-preprod-dp-ops-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-proda-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-prodb-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-qa-dp-ds-sa@vf-de-ca-lab.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-qa-dp-ds-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+
+          writers:
+            - serviceAccount:vf-de-ca-proda-comp-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-prodb-comp-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:de-ca-proda-comp2-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-proda-df-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-prodb-df-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ca-prodb-df-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+
+      custom_views:
+        bigquery:
+         datasets:
+           - name: mart_qualytics_v
+             labels:
+              vf_use_case: qualytics
+              vf_cost_centre: de04109811
+              vf_budget_owner: frank_meisgen02-vodafone_com
+        permissions:
+          readers:
+            - group:gcp-vf-de-ca-dataengineers@vodafone.com
+            - group:gcp-vf-nwp-datascientist@vodafone.com
+            - group:gcp-vf-nwp-dataengineers@vodafone.com
+            - group:gcp-vf-de-ca-nw-qualytics@vodafone.com
+            - group:gcp-vf-nwp-visualization@vodafone.com
+            - serviceAccount:bq-de-qualitics@vf-grp-ngbi-pprd-svcs-01.iam.gserviceaccount.com
+            - serviceAccount:bq-de-qualitics@vf-grp-ngbi-prd-svcs-01.iam.gserviceaccount.com
+            - serviceAccount:vf-de-nwp-dev-dp-ds-sa@vf-de-nwp-nonlive.iam.gserviceaccount.com
+          writers:
+            - group:gcp-vf-de-devops@vodafone.com
+
+      mart_de_nwp_bq_custom:
+        bigquery:
+         datasets:
+           - name: mart_tma_v
+        permissions:
+          readers:
+            - group:gcp-vf-de-nwp-tableau-user@vodafone.com
+            - group:gcp-vf-de-nwp-ds-viewer@vodafone.com
+            - group:gcp-vf-de-ca-dataengineers@vodafone.com
+          writers:
+            - group:gcp-vf-de-devops@vodafone.com
+
+      fixed_kpi_monitoring_views:
+        bigquery:
+         datasets:
+           - name: mart_fixed_kpi_monitoring_v
+             labels:
+               vf_use_case: fixed-kpi-monitoring
+               vf_cost_centre: de04109811
+               vf_budget_owner: frank_meisgen02-vodafone_com
+        permissions:
+          readers:
+            - group:gcp-vf-de-nwp-de-bq-nonlive@vodafone.com
+            - group:gcp-vf-de-nwp-ds-user@vodafone.com
+            - group:gcp-vf-nwp-datascientist@vodafone.com
+            - group:gcp-vf-nwp-dataengineers@vodafone.com
+            - group:gcp-vf-de-ca-dataengineers@vodafone.com
+            - serviceAccount:vf-de-nwp-preprod-dp-ops-sa@vf-de-nwp-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-nwp-proda-dp-ops-sa@vf-de-nwp-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-nwp-prodb-dp-ops-sa@vf-de-nwp-live.iam.gserviceaccount.com
+            - serivceAccount:vf-de-nwp-qa-dp-ds-sa@vf-de-nwp-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-nwp-dev-dp-ds-sa@vf-de-nwp-nonlive.iam.gserviceaccount.com
+          writers:
+            - group:gcp-vf-de-devops@vodafone.com
+
+      ericsson_custom_view:
+        bigquery:
+         datasets:
+           - name: mart_aiaas_v
+        permissions:
+          readers:
+           - serviceAccount:vf-de-nwp-preprod-comp-sa@vf-de-nwp-nonlive.iam.gserviceaccount.com
+           - serviceAccount:vf-de-nwp-aiaas-dp-ds-sa@vf-de-nwp-nonlive.iam.gserviceaccount.com
+          writers:
+           - group:gcp-vf-de-devops@vodafone.com
+
+      tableau_futurize_usecase_customer_view:
+        bigquery:
+         datasets:
+           - name: lake_tbl_futurize_data_v
+        permissions:
+          readers:
+           - serviceAccount:vf-de-futurize-tbl-sa@vf-de-ca-lab.iam.gserviceaccount.com
+           - group:gcp-vf-de-ca-dataengineers@vodafone.com
+          writers:
+           - group:gcp-vf-de-devops@vodafone.com
+
+
+      tableau_vtv_usecase_customer_view:
+        bigquery:
+         datasets:
+           - name: lake_tbl_vtv_data_v
+        permissions:
+          readers:
+           - serviceAccount:vf-de-vtv-tbl-sa@vf-de-bi-nonlive.iam.gserviceaccount.com
+           - group:gcp-vf-de-ca-dataengineers@vodafone.com
+          writers:
+           - group:gcp-vf-de-devops@vodafone.com
+
+      celonis_cip_dmz_view:
+        bigquery:
+         datasets:
+           - name: lake_celonis_dmz_transfer_v
+        permissions:
+          readers:
+           - serviceAccount:vf-cip-de-nl-ems-sa@vf-cip-ca-nonlive.iam.gserviceaccount.com
+           - group:gcp-vf-de-ca-dataengineers@vodafone.com
+          writers:
+           - group:gcp-vf-de-devops@vodafone.com
+
+
+      nps_on_ai_booster_custom_view:
+        bigquery:
+         datasets:
+           - name: mart_nps_model_v
+        permissions:
+          readers:
+           - serviceAccount:vf-de-aib-prd-cmr-nps-lab-sa@vf-de-aib-prd-cmr-nps-lab.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-nps-nl-sa@vf-de-aib-prd-cmr-nps-nl.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-nps-live-sa@vf-de-aib-prd-cmr-nps-live.iam.gserviceaccount.com
+           - serviceAccount:vf-grp-cmrbdai-proda-dp-ops-sa@vf-grp-cmrbdai-live.iam.gserviceaccount.com
+           - serviceAccount:service-971857527930@gcp-sa-aiplatform.iam.gserviceaccount.com
+           - serviceAccount:service-1027542014000@gcp-sa-aiplatform.iam.gserviceaccount.com
+           - group:gcp-vf-de-aib-prd-cmr-nps_datascientist@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-nps_mlengineer@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-nps_mlops@vodafone.com
+           - group:gcp-vf-de-ca-dataengineers@vodafone.com
+          writers:
+           - group:gcp-vf-de-devops@vodafone.com
+
+      cops_on_ai_booster_custom_view:
+        bigquery:
+         datasets:
+           - name: lake_aib_cmr_mat_data_v
+        permissions:
+          readers:
+           - serviceAccount:vf-de-aib-prd-cmr-mat-lab-sa@vf-de-aib-prd-cmr-mat-lab.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-mat-nl-sa@vf-de-aib-prd-cmr-mat-nl.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-mat-live-sa@vf-de-aib-prd-cmr-mat-live.iam.gserviceaccount.com
+           - group:gcp-vf-de-aib-prd-cmr-mat_datascientist@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-mat_mlengineer@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-mat_mlops@vodafone.com
+           - group:gcp-vf-de-ca-dataengineers@vodafone.com
+          writers:
+           - group:gcp-vf-de-devops@vodafone.com
+
+      cops_on_ai_booster_ds_custom_data:
+        bigquery:
+         datasets:
+           - name: lake_aib_cmr_mat_processed_s
+        permissions:
+          readers:
+           - serviceAccount:vf-de-aib-prd-cmr-mat-lab-sa@vf-de-aib-prd-cmr-mat-lab.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-mat-nl-sa@vf-de-aib-prd-cmr-mat-nl.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-mat-live-sa@vf-de-aib-prd-cmr-mat-live.iam.gserviceaccount.com
+           # vf-de-aib-prd-cmr-mat-lab Vertex AI Agent Service Account
+           - serviceAccount:service-442895834558@gcp-sa-aiplatform.iam.gserviceaccount.com
+           # vf-de-aib-prd-cmr-mat-live Vertex AI Agent Service Account
+           - serviceAccount:service-511746945356@gcp-sa-aiplatform.iam.gserviceaccount.com
+           - group:gcp-vf-de-aib-prd-cmr-mat_datascientist@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-mat_mlengineer@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-mat_mlops@vodafone.com
+           - group:gcp-vf-de-ca-dataengineers@vodafone.com
+          writers:
+           - serviceAccount:vf-de-aib-prd-cmr-mat-live-sa@vf-de-aib-prd-cmr-mat-live.iam.gserviceaccount.com
+           # vf-de-aib-prd-cmr-mat-live Vertex AI Agent Service Account
+           - serviceAccount:service-511746945356@gcp-sa-aiplatform.iam.gserviceaccount.com
+           - group:gcp-vf-de-devops@vodafone.com
+
+      rcd_on_ai_booster_custom_view:
+        bigquery:
+         datasets:
+           - name: lake_aib_cmr_rcd_data_v
+        permissions:
+          readers:
+           - serviceAccount:vf-de-aib-prd-cmr-rcd-lab-sa@vf-de-aib-prd-cmr-rcd-lab.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-rcd-nl-sa@vf-de-aib-prd-cmr-rcd-nl.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-rcd-live-sa@vf-de-aib-prd-cmr-rcd-live.iam.gserviceaccount.com
+           - group:gcp-vf-de-aib-prd-cmr-rcd_datascientist@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-rcd_mlengineer@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-rcd_mlops@vodafone.com
+           - group:gcp-vf-de-ca-dataengineers@vodafone.com
+          writers:
+           - group:gcp-vf-de-devops@vodafone.com
+
+      rcd_on_ai_booster_ds_custom_data:
+        bigquery:
+         datasets:
+           - name: lake_aib_cmr_rcd_processed_s
+        permissions:
+          readers:
+           - serviceAccount:vf-de-aib-prd-cmr-rcd-lab-sa@vf-de-aib-prd-cmr-rcd-lab.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-rcd-nl-sa@vf-de-aib-prd-cmr-rcd-nl.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-rcd-live-sa@vf-de-aib-prd-cmr-rcd-live.iam.gserviceaccount.com
+           # vf-de-aib-prd-cmr-rcd-lab Vertex AI Agent Service Account
+           - serviceAccount:service-946562252778@gcp-sa-aiplatform.iam.gserviceaccount.com
+           # vf-de-aib-prd-cmr-rcd-live Vertex AI Agent Service Account
+           - serviceAccount:service-177542485030@gcp-sa-aiplatform.iam.gserviceaccount.com
+           - group:gcp-vf-de-aib-prd-cmr-rcd_datascientist@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-rcd_mlengineer@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-rcd_mlops@vodafone.com
+           - group:gcp-vf-de-ca-dataengineers@vodafone.com
+          writers:
+           - serviceAccount:vf-de-aib-prd-cmr-rcd-live-sa@vf-de-aib-prd-cmr-rcd-live.iam.gserviceaccount.com
+           # vf-de-aib-prd-cmr-rcd-live Vertex AI Agent Service Account
+           - serviceAccount:service-177542485030@gcp-sa-aiplatform.iam.gserviceaccount.com
+           - group:gcp-vf-de-devops@vodafone.com
+
+      chn_on_ai_booster_custom_view:
+        bigquery:
+         datasets:
+           - name: lake_aib_cmr_chn_data_v
+        permissions:
+          readers:
+           - serviceAccount:vf-de-aib-prd-cmr-chn-lab-sa@vf-de-aib-prd-cmr-chn-lab.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-chn-nl-sa@vf-de-aib-prd-cmr-chn-nl.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-chn-live-sa@vf-de-aib-prd-cmr-chn-live.iam.gserviceaccount.com
+           # vf-de-aib-prd-cmr-chn-lab Vertex AI Agent Service Account
+           - serviceAccount:service-764005359647@gcp-sa-aiplatform.iam.gserviceaccount.com
+           - group:gcp-vf-de-aib-prd-cmr-chn_datascientist@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-chn_mlengineer@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-chn_mlops@vodafone.com
+           - group:gcp-vf-de-ca-dataengineers@vodafone.com
+          writers:
+           - group:gcp-vf-de-devops@vodafone.com
+
+      chn_on_ai_booster_ds_custom_data:
+        bigquery:
+         datasets:
+           - name: lake_aib_cmr_chn_processed_s
+        permissions:
+          readers:
+           - serviceAccount:vf-de-aib-prd-cmr-chn-lab-sa@vf-de-aib-prd-cmr-chn-lab.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-chn-nl-sa@vf-de-aib-prd-cmr-chn-nl.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-chn-live-sa@vf-de-aib-prd-cmr-chn-live.iam.gserviceaccount.com
+            # vf-de-aib-prd-cmr-chn-lab Vertex AI Agent Service Account
+           - serviceAccount:service-764005359647@gcp-sa-aiplatform.iam.gserviceaccount.com
+           # vf-de-aib-prd-cmr-chn-live Vertex AI Agent Service Account
+           - serviceAccount:service-838772327923@gcp-sa-aiplatform.iam.gserviceaccount.com
+           - group:gcp-vf-de-aib-prd-cmr-chn_datascientist@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-chn_mlengineer@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-chn_mlops@vodafone.com
+           - group:gcp-vf-de-ca-dataengineers@vodafone.com
+          writers:
+           - serviceAccount:vf-de-aib-prd-cmr-chn-live-sa@vf-de-aib-prd-cmr-chn-live.iam.gserviceaccount.com
+            # vf-de-aib-prd-cmr-chn-live Vertex AI Agent Service Account
+           - serviceAccount:service-838772327923@gcp-sa-aiplatform.iam.gserviceaccount.com
+           - group:gcp-vf-de-devops@vodafone.com
+
+      nps_on_ai_booster_ds_staging_custom:
+        bigquery:
+         datasets:
+           - name: lake_aib_nps_processed_staging_s
+        permissions:
+          readers:
+           - serviceAccount:vf-de-aib-prd-cmr-nps-lab-sa@vf-de-aib-prd-cmr-nps-lab.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-nps-nl-sa@vf-de-aib-prd-cmr-nps-nl.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-nps-live-sa@vf-de-aib-prd-cmr-nps-live.iam.gserviceaccount.com
+           - serviceAccount:vf-grp-cmrbdai-proda-dp-ops-sa@vf-grp-cmrbdai-live.iam.gserviceaccount.com
+           - serviceAccount:service-971857527930@gcp-sa-aiplatform.iam.gserviceaccount.com
+           - serviceAccount:service-1027542014000@gcp-sa-aiplatform.iam.gserviceaccount.com
+           - group:gcp-vf-de-aib-prd-cmr-nps_datascientist@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-nps_mlengineer@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-nps_mlops@vodafone.com
+           - group:gcp-vf-de-ca-dataengineers@vodafone.com
+          writers:
+           - serviceAccount:vf-de-aib-prd-cmr-nps-live-sa@vf-de-aib-prd-cmr-nps-live.iam.gserviceaccount.com
+           - group:gcp-vf-de-devops@vodafone.com
+
+
+      nps_on_ai_booster_ds_predition_custom:
+        bigquery:
+         datasets:
+           - name: lake_aib_nps_processed_prediction_s
+        permissions:
+          readers:
+           - serviceAccount:vf-de-aib-prd-cmr-nps-lab-sa@vf-de-aib-prd-cmr-nps-lab.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-nps-nl-sa@vf-de-aib-prd-cmr-nps-nl.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-nps-live-sa@vf-de-aib-prd-cmr-nps-live.iam.gserviceaccount.com
+           - serviceAccount:vf-grp-cmrbdai-proda-dp-ops-sa@vf-grp-cmrbdai-live.iam.gserviceaccount.com
+           - serviceAccount:service-971857527930@gcp-sa-aiplatform.iam.gserviceaccount.com
+           - serviceAccount:service-1027542014000@gcp-sa-aiplatform.iam.gserviceaccount.com
+           - serviceAccount:de-ca-dev-comp2-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+           - serviceAccount:de-ca-proda-comp2-sa@vf-de-ca-live.iam.gserviceaccount.com
+           - serviceAccount:vf-de-ca-dev-dp-ds-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+           - serviceAccount:vf-de-ca-proda-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+           - group:gcp-vf-de-aib-prd-cmr-nps_datascientist@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-nps_mlengineer@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-nps_mlops@vodafone.com
+           - group:gcp-vf-de-ca-dataengineers@vodafone.com
+          writers:
+           - serviceAccount:vf-de-aib-prd-cmr-nps-live-sa@vf-de-aib-prd-cmr-nps-live.iam.gserviceaccount.com
+           - serviceAccount:service-1027542014000@gcp-sa-aiplatform.iam.gserviceaccount.com
+           - group:gcp-vf-de-devops@vodafone.com
+
+
+      ppm_on_ai_booster_custom_view:
+        bigquery:
+         datasets:
+           - name: lake_aib_cmr_ppm_data_v
+        permissions:
+          readers:
+           - serviceAccount:vf-de-aib-prd-cmr-ppm-lab-sa@vf-de-aib-prd-cmr-ppm-lab.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-ppm-nl-sa@vf-de-aib-prd-cmr-ppm-nl.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-ppm-live-sa@vf-de-aib-prd-cmr-ppm-live.iam.gserviceaccount.com
+           - group:gcp-vf-de-aib-prd-cmr-ppm_datascientist@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-ppm_mlengineer@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-ppm_mlops@vodafone.com
+           - group:gcp-vf-de-ca-dataengineers@vodafone.com
+          writers:
+           - group:gcp-vf-de-devops@vodafone.com
+
+      ppm_on_ai_booster_ds_custom_data:
+        bigquery:
+         datasets:
+           - name: lake_aib_cmr_ppm_processed_s
+        permissions:
+          readers:
+           - serviceAccount:vf-de-aib-prd-cmr-ppm-lab-sa@vf-de-aib-prd-cmr-ppm-lab.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-ppm-nl-sa@vf-de-aib-prd-cmr-ppm-nl.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-ppm-live-sa@vf-de-aib-prd-cmr-ppm-live.iam.gserviceaccount.com
+           # vf-de-aib-prd-cmr-ppm-lab Vertex AI Agent Service Account
+           - serviceAccount:service-495992672191@gcp-sa-aiplatform.iam.gserviceaccount.com
+           # vf-de-aib-prd-cmr-ppm-live Vertex AI Agent Service Account
+           - serviceAccount:service-587760041804@gcp-sa-aiplatform.iam.gserviceaccount.com
+           - group:gcp-vf-de-aib-prd-cmr-ppm_datascientist@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-ppm_mlengineer@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-ppm_mlops@vodafone.com
+           - group:gcp-vf-de-ca-dataengineers@vodafone.com
+          writers:
+           - serviceAccount:vf-de-aib-prd-cmr-ppm-live-sa@vf-de-aib-prd-cmr-ppm-live.iam.gserviceaccount.com
+           # vf-de-aib-prd-cmr-ppm-live Vertex AI Agent Service Account
+           - serviceAccount:service-587760041804@gcp-sa-aiplatform.iam.gserviceaccount.com
+           - group:gcp-vf-de-devops@vodafone.com
+
+      clp_on_ai_booster_custom_view:
+        bigquery:
+         datasets:
+           - name: lake_aib_cmr_clp_data_v
+        permissions:
+          readers:
+           - serviceAccount:vf-de-aib-prd-cmr-clp-lab-sa@vf-de-aib-prd-cmr-clp-lab.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-clp-nl-sa@vf-de-aib-prd-cmr-clp-nl.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-clp-live-sa@vf-de-aib-prd-cmr-clp-live.iam.gserviceaccount.com
+           - group:gcp-vf-de-aib-prd-cmr-clp_datascientist@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-clp_mlengineer@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-clp_mlops@vodafone.com
+           - group:gcp-vf-de-ca-dataengineers@vodafone.com
+          writers:
+           - group:gcp-vf-de-devops@vodafone.com
+
+      clp_on_ai_booster_ds_custom_data:
+        bigquery:
+         datasets:
+           - name: lake_aib_cmr_clp_processed_s
+        permissions:
+          readers:
+           - serviceAccount:vf-de-aib-prd-cmr-clp-lab-sa@vf-de-aib-prd-cmr-clp-lab.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-clp-nl-sa@vf-de-aib-prd-cmr-clp-nl.iam.gserviceaccount.com
+           - serviceAccount:vf-de-aib-prd-cmr-clp-live-sa@vf-de-aib-prd-cmr-clp-live.iam.gserviceaccount.com
+           # vf-de-aib-prd-cmr-clp-lab Vertex AI Agent Service Account
+           - serviceAccount:service-255468461648@gcp-sa-aiplatform.iam.gserviceaccount.com
+           # vf-de-aib-prd-cmr-clp-live Vertex AI Agent Service Account
+           - serviceAccount:service-623534214723@gcp-sa-aiplatform.iam.gserviceaccount.com
+           - group:gcp-vf-de-aib-prd-cmr-clp_datascientist@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-clp_mlengineer@vodafone.com
+           - group:gcp-vf-de-aib-prd-cmr-clp_mlops@vodafone.com
+           - group:gcp-vf-de-ca-dataengineers@vodafone.com
+          writers:
+           - serviceAccount:vf-de-aib-prd-cmr-clp-live-sa@vf-de-aib-prd-cmr-clp-live.iam.gserviceaccount.com
+           # vf-de-aib-prd-cmr-clp-live Vertex AI Agent Service Account
+           - serviceAccount:service-623534214723@gcp-sa-aiplatform.iam.gserviceaccount.com
+           - group:gcp-vf-de-devops@vodafone.com
+
+      prepaid_reinforcement_bq_custom:
+         bigquery:
+           datasets:
+             - name: lake_adhoc_prepaid_reinforcement_s
+         permissions:
+           "<<1": *big_query_permissions_ca
+           writers:
+             - group:gcp-vf-de-ca-adhoc-prepaid-reinforcement@vodafone.com
+             - serviceAccount:vf-de-ca-proda-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+             - serviceAccount:vf-de-ca-prodb-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+             - serviceAccount:vf-de-ca-proda-df-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+             - serviceAccount:vf-de-ca-prodb-df-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+             - group:gcp-vf-de-devops@vodafone.com
+
+
+      ## Adhoc Dataset specific to the AOM-POC. To be removed in 6 months from creation
+      aom_poc_bq_custom:
+         bigquery:
+           datasets:
+             - name: lake_adhoc_aom_poc_s
+         permissions:
+           writers:
+             - group:gcp-vf-de-ca-aompoc@vodafone.com
+             - group:gcp-vf-de-devops@vodafone.com
+             - serviceAccount:vf-de-ngbi-dh-dyn-debi-sa@vf-de-datahub.iam.gserviceaccount.com
+
+      ## Adhoc Dataset for the NextArt Data Lake. To be removed in 6 months from creation
+      nextart_datalake_bq_custom:
+         bigquery:
+           datasets:
+             - name: lake_adhoc_nextart_s
+               authorized_views:
+                - vf-de-datahub.vfde_dh_lake_edw__semantic_access__s.fc_tv_content_usg_nolin_curr_h
+                - vf-de-datahub.vfde_dh_lake_edw__semantic_access__s.fc_tv_vod_asset_usg_nolin_curr_m
+                - vf-de-datahub.vfde_dh_lake_edw__semantic_access__s.fc_tv_vod_asset_usg_nolin_curr_w
+                - vf-de-datahub.vfde_dh_lake_edw__semantic_access__s.fc_tv_vod_customer_m
+                - vf-de-datahub.vfde_dh_lake_edw__semantic_access__s.fc_tv_vod_customer_w
+                - vf-de-datahub.vfde_dh_lake_edw__semantic_access__s.fc_tv_vod_purchased_content_nolin_curr_h
+                - vf-de-datahub.vfde_dh_lake_edw__semantic_access__s.dl_bq_legacy_dq_kpi_dashboard_vw
+         permissions:
+           writers:
+             - group:gcp-vf-de-ca-nextart@vodafone.com
+             - serviceAccount:vf-de-ngbi-dh-dyn-debi-sa@vf-de-datahub.iam.gserviceaccount.com
+             - serviceAccount:vf-de-newco-air-sa@vf-de-bi-nonlive.iam.gserviceaccount.com
+             - serviceAccount:vf-de-newco-prod-air-sa@vf-de-ca-live.iam.gserviceaccount.com
+           owners:
+             - group:gcp-vf-de-devops@vodafone.com
+
+      mart_devops:
+         bigquery:
+           datasets:
+             - name: mart_devops_s
+         permissions:
+           writers:
+             - serviceAccount:vf-de-ca-prodb-comp-sa@vf-de-ca-live.iam.gserviceaccount.com
+             - serviceAccount:de-ca-proda-comp2-sa@vf-de-ca-live.iam.gserviceaccount.com
+             - serviceAccount:vf-de-ca-proda-comp-sa@vf-de-ca-live.iam.gserviceaccount.com
+             - group:gcp-vf-de-devops@vodafone.com
+
+      feature_store:
+         bigquery:
+           datasets:
+             - name: lake_featurestore_s
+         permissions:
+           "<<1": *big_query_permissions_ca
+           writers:
+             - serviceAccount:vf-de-ca-proda-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+             - serviceAccount:vf-de-ca-prodb-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+             - group:gcp-vf-de-devops@vodafone.com
+
+
+    ################# Begin VF-DE-PUZ ##########################################################
+
+      rawprepared_de_puz_bq_custom:
+        bigquery:
+          datasets:
+            - name: lake_puz_enterprise_rawprepared_s
+            - name: lake_puz_billing_rawprepared_s
+        permissions:
+          readers:
+            - group:gcp-vf-de-puz-tableau-user@vodafone.com
+            - group:gcp-vf-de-puz-datascientist@vodafone.com
+            - serviceAccount:vf-de-puz-proda-dp-ops-sa@vf-de-puz-live.iam.gserviceaccount.com
+            - serivceAccount:vf-de-puz-dev-dp-ds-sa@vf-de-puz-nonlive.iam.gserviceaccount.com
+            - serivceAccount:tableau-puzzle-de-sa@vf-grp-cpsa-prd-tools-01.iam.gserviceaccount.com
+          writers:
+            - serviceAccount:vf-de-puz-proda-comp-sa@vf-de-puz-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-puz-proda-df-ops-sa@vf-de-puz-live.iam.gserviceaccount.com
+            - group:gcp-vf-de-puz-ops-datahub@vodafone.com
+
+      mart_de_puz_bq_custom:
+        bigquery:
+          datasets:
+            - name: mart_puz_v
+        permissions:
+          readers:
+            - group:gcp-vf-de-puz-tableau-user@vodafone.com
+            - group:gcp-vf-de-puz-datascientist@vodafone.com
+            - serviceAccount:vf-de-puz-proda-dp-ops-sa@vf-de-puz-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-puz-proda-df-ops-sa@vf-de-puz-live.iam.gserviceaccount.com
+            - serivceAccount:vf-de-puz-dev-dp-ds-sa@vf-de-puz-nonlive.iam.gserviceaccount.com
+            - serivceAccount:tableau-puzzle-de-sa@vf-grp-cpsa-prd-tools-01.iam.gserviceaccount.com
+          writers:
+            - serviceAccount:vf-de-puz-proda-comp-sa@vf-de-puz-live.iam.gserviceaccount.com
+            - group:gcp-vf-de-puz-ops-datahub@vodafone.com
+
+      rawingest_puz:
+        storage:
+          buckets:
+            - name: puz-rawingested
+        permissions:
+          readers:
+            - group:gcp-vf-de-puz-datascientist@vodafone.com
+            - serviceAccount:vf-de-puz-proda-dp-ops-sa@vf-de-puz-live.iam.gserviceaccount.com
+          writers:
+            - group:gcp-vf-de-puz-ops-datahub@vodafone.com
+            - serviceAccount:vf-de-ca-dh-nifi-ing-usr-sa@vf-de-datahub.iam.gserviceaccount.com
+            - serviceAccount:vf-de-puz-proda-comp-sa@vf-de-puz-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-puz-proda-df-ops-sa@vf-de-puz-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-neds-puz-lev-dp-sa@vf-grp-neds-live-trusted.iam.gserviceaccount.com
+
+      processed_puz_bq:
+        bigquery:
+          datasets:
+            - name: lake_puz_processed_s
+            - name: lake_puz_reports_s
+            - name: lake_puz_modeloutput_s
+        permissions:
+          readers:
+            - group:gcp-vf-de-puz-tableau-user@vodafone.com
+            - group:gcp-vf-de-puz-datascientist@vodafone.com
+            - serviceAccount:vf-de-puz-proda-df-ops-sa@vf-de-puz-live.iam.gserviceaccount.com
+            - serivceAccount:vf-de-puz-dev-dp-ds-sa@vf-de-puz-nonlive.iam.gserviceaccount.com
+            - serivceAccount:tableau-puzzle-de-sa@vf-grp-cpsa-prd-tools-01.iam.gserviceaccount.com
+          writers:
+            - serviceAccount:vf-de-puz-proda-dp-ops-sa@vf-de-puz-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-puz-proda-comp-sa@vf-de-puz-live.iam.gserviceaccount.com
+            - group:gcp-vf-de-puz-ops-datahub@vodafone.com
+
+      puz_mapping_bq_custom:
+        bigquery:
+          datasets:
+            - name: lake_puz_mapping_s
+        permissions:
+          readers:
+            - group:gcp-vf-de-puz-datascientist@vodafone.com
+            - serviceAccount:userinventory-microservice-sa@vf-grp-dynamo-live.iam.gserviceaccount.com
+            - serivceAccount:vf-de-puz-dev-dp-ds-sa@vf-de-puz-nonlive.iam.gserviceaccount.com
+            - serivceAccount:tableau-puzzle-de-sa@vf-grp-cpsa-prd-tools-01.iam.gserviceaccount.com
+          writers:
+            - serviceAccount:bqconnector-microservice-sa@vf-grp-dynamo-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-puz-proda-comp-sa@vf-de-puz-live.iam.gserviceaccount.com
+            - group:gcp-vf-de-puz-ops-datahub@vodafone.com
+
+    ########## End VF-DE-PUZ  ################################################
+
+    ######## Begin BIF3 PUZ #############
+      secure_live_temp_puz:
+        permissions:
+          writers:
+            - serviceAccount:vf-de-puz-proda-comp-sa@vf-de-puz-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-puz-proda-df-ops-sa@vf-de-puz-live.iam.gserviceaccount.com
+
+        storage:
+          key_type: base
+          buckets:
+            - name: puz-secure-live-temp
+              lifecycle_rules:
+              - action: Delete
+                conditions:
+                  age: 15
+
+      temp_export_puz:
+        permissions:
+          writers:
+            - serviceAccount:vf-de-puz-proda-df-ops-sa@vf-de-puz-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-puz-proda-comp-sa@vf-de-puz-live.iam.gserviceaccount.com
+        bigquery:
+          datasets:
+            - name: lake_puz_temp_export_s
+              expiration: 86400000
+    ######## END BIF3 Puz #############
+
+      secure_live_temp:
+        permissions:
+          writers:
+            - serviceAccount:vf-{tenant}-ca-proda-df-ops-sa@vf-{tenant}-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-{tenant}-ca-prodb-df-ops-sa@vf-{tenant}-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-{tenant}-ca-proda-comp-sa@vf-{tenant}-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-{tenant}-ca-prodb-comp-sa@vf-{tenant}-ca-live.iam.gserviceaccount.com
+            - serviceAccount:{tenant}-ca-proda-comp2-sa@vf-{tenant}-ca-live.iam.gserviceaccount.com
+        storage:
+          key_type: base
+          buckets:
+            - name: secure-live-temp
+              lifecycle_rules:
+                - action: Delete
+                  conditions:
+                    age: 15
+
+      temp_export:
+        permissions:
+          writers:
+            - serviceAccount:vf-{tenant}-ca-proda-df-ops-sa@vf-{tenant}-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-{tenant}-ca-prodb-df-ops-sa@vf-{tenant}-ca-live.iam.gserviceaccount.com
+        bigquery:
+          datasets:
+            - name: lake_temp_export_s
+              expiration: 86400000
+
+
+    ######## Begin BIF3 NWP #############
+      secure_live_temp_nwp:
+        permissions:
+          writers:
+            - serviceAccount:vf-{tenant}-nwp-proda-df-ops-sa@vf-{tenant}-nwp-live.iam.gserviceaccount.com
+            - serviceAccount:vf-{tenant}-nwp-prodb-df-ops-sa@vf-{tenant}-nwp-live.iam.gserviceaccount.com
+            - serviceAccount:vf-{tenant}-nwp-proda-comp-sa@vf-{tenant}-nwp-live.iam.gserviceaccount.com
+            - serviceAccount:vf-{tenant}-nwp-prodb-comp-sa@vf-{tenant}-nwp-live.iam.gserviceaccount.com
+        storage:
+          key_type: base
+          buckets:
+            - name: nwp-secure-live-temp
+              lifecycle_rules:
+              - action: Delete
+                conditions:
+                  age: 15
+
+      temp_export_nwp:
+        permissions:
+          writers:
+            - serviceAccount:vf-{tenant}-nwp-proda-df-ops-sa@vf-{tenant}-nwp-live.iam.gserviceaccount.com
+            - serviceAccount:vf-{tenant}-nwp-prodb-df-ops-sa@vf-{tenant}-nwp-live.iam.gserviceaccount.com
+        bigquery:
+          datasets:
+            - name: lake_nwp_temp_export_s
+              expiration: 86400000
+      ######## END BIF3 NWP #############
+      processed_ca_covid:
+        storage:
+          buckets:
+            - name: covid19-data
+        permissions:
+          readers:
+            - serviceAccount:vf-csg-ca-proda-comp-sa@vf-csg-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-csg-ca-dev-comp-sa@vf-csg-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-{tenant}-ca-proda-comp-sa@vf-{tenant}-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-{tenant}-ca-proda-dp-ops-sa@vf-{tenant}-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-{tenant}-ca-dev-dp-ds-sa@vf-{tenant}-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-{tenant}-ca-dev-comp-sa@vf-{tenant}-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-{tenant}-ca-qa-dp-ds-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-{tenant}-ca-qa-comp-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+            - serviceAccount:de-ca-dev-comp2-sa@vf-de-ca-nonlive.iam.gserviceaccount.com
+          writers:
+            - serviceAccount:vf-csg-ca-proda-comp-sa@vf-csg-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-{tenant}-ca-proda-comp-sa@vf-{tenant}-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-{tenant}-ca-proda-dp-ops-sa@vf-{tenant}-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-{tenant}-ca-prodb-comp-sa@vf-{tenant}-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-{tenant}-ca-prodb-dp-ops-sa@vf-{tenant}-ca-live.iam.gserviceaccount.com
+
+
+      #### BEGIN Nucleus Configuration####
+         ### Zeta_dev_01 ###
+      nucleus_all_buckets_zeta_dev_01:
+        permissions:
+          readers:
+           #give the storage transfer service in vf-de-ngbi-dev-gen-01 project permission to write data into datahub
+            - serviceAccount:service-964419709160@gcp-sa-datafusion.iam.gserviceaccount.com
+
+          writers:
+            # This service account will help data transfer between local market on-premise and cloud
+            - serviceAccount:vf-de-ngbi-dh-dmaapingdev2-sa@vf-de-datahub.iam.gserviceaccount.com
+
+            # Compute Datafusion and Composer accounts
+            - serviceAccount:vf-comp-ns-de-dev-01@vf-de-ngbi-dev-gen-01.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ngbi-dev-datafusion-sa@vf-de-ngbi-dev-gen-01.iam.gserviceaccount.com
+            - serviceAccount:vf-df-dp-ns-de-dev-01@vf-de-ngbi-dev-gen-01.iam.gserviceaccount.com
+
+            # Dynamo dev
+            - serviceAccount:vf-de-ngbi-dh-dynamodev1-sa@vf-de-datahub.iam.gserviceaccount.com
+
+            # Data Engineer group
+            - group:gcp-vf-de-ngbi-dev-gen-01-dataengineer@vodafone.com
+
+        storage:
+          key_type: base
+          buckets:
+            - name: rawingested-dmaap-dev-01
+            - name: ngbi-rawprepared-dev-01
+            - name: cim-dev-01
+            - name: rejected-dev-01
+            - name: suspended-dev-01
+
+      nucleus_bq_zeta_dev_01:
+        permissions:
+          readers:
+          #give the storage transfer service in vf-de-ngbi-dev-gen-01 project permission to write data into datahub
+            - serviceAccount:service-964419709160@gcp-sa-datafusion.iam.gserviceaccount.com
+
+          writers:
+            # Data Engineer group
+            - group:gcp-vf-de-ngbi-dev-gen-01-dataengineer@vodafone.com
+
+            # Compute Datafusion and Composer accounts
+            - serviceAccount:vf-comp-ns-de-dev-01@vf-de-ngbi-dev-gen-01.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ngbi-dev-datafusion-sa@vf-de-ngbi-dev-gen-01.iam.gserviceaccount.com
+            - serviceAccount:vf-df-dp-ns-de-dev-01@vf-de-ngbi-dev-gen-01.iam.gserviceaccount.com
+
+            # Dynamo dev
+            - serviceAccount:vf-de-ngbi-dh-dynamodev1-sa@vf-de-datahub.iam.gserviceaccount.com
+
+        bigquery:
+          key_type: bq
+          datasets:
+            - name: lake_edw_staging_dev_01_s
+            - name: lake_edw_integrated_dev_01_s
+            - name: lake_edw_reporting_dev_01_s
+      #### RAW BQ datasets ####
+            - name: lake_raw_data_dev_01_s
+            - name: lake_temp_dev_01_s
+            - name: lake_suspended_dev_01_s
+            - name: lake_reject_dev_01_s
+            - name: lake_orchestration_dev_01_s
+      #### END Zeta_dev_01 ####
+
+      #### BEGIN Zeta_tst_01 ####
+      nucleus_all_buckets_zeta_tst_01:
+        permissions:
+          readers:
+          #give the storage transfer service in vf-de-ngbi-tst-gen-01 project permission to write data into datahub
+            - serviceAccount:service-799379265197@gcp-sa-datafusion.iam.gserviceaccount.com
+            # Tstuser
+            - group:gcp-vf-de-ngbi-tstuser@vodafone.com
+
+          writers:
+            # This service account will help data transfer between local market on-premise and cloud
+            - serviceAccount:vf-de-ngbi-dh-dmaapingdev2-sa@vf-de-datahub.iam.gserviceaccount.com
+
+            # Compute Datafusion and Composer accounts
+            - serviceAccount:vf-comp-ns-de-tst-01@vf-de-ngbi-tst-gen-01.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ngbi-tst-datafusion-sa@vf-de-ngbi-tst-gen-01.iam.gserviceaccount.com
+            - serviceAccount:vf-df-dp-ns-de-tst-01@vf-de-ngbi-tst-gen-01.iam.gserviceaccount.com
+
+            # Data Engineer group
+            - group:gcp-vf-de-ngbi-tst-gen-01-dataengineer@vodafone.com
+
+            # Dynamo tst
+            - serviceAccount:vf-de-ngbi-dh-dynamotst1-sa@vf-de-datahub.iam.gserviceaccount.com
+
+          owners:
+            # Datapublisher
+            - group:gcp-vf-de-ngbi-datapublisher@vodafone.com
+
+        storage:
+          key_type: base
+          buckets:
+            - name: rawingested-dmaap-tst-01
+            - name: ngbi-rawprepared-tst-01
+            - name: cim-tst-01
+            - name: rejected-tst-01
+            - name: suspended-tst-01
+
+      nucleus_bq_zeta_tst_01:
+        permissions:
+          readers:
+          #give the storage transfer service in vf-de-ngbi-tst-gen-01 project permission to write data into datahub
+            - serviceAccount:service-799379265197@gcp-sa-datafusion.iam.gserviceaccount.com
+            # TstUser
+            - group:gcp-vf-de-ngbi-tstuser@vodafone.com
+          # Golden Source Team
+            - serviceAccount:bq-de-nucleus-poc@vf-grp-ngbi-prd-svcs-01.iam.gserviceaccount.com
+            - serviceAccount:bq-de-nucleus-poc@vf-grp-ngbi-pprd-svcs-01.iam.gserviceaccount.com
+
+          writers:
+            # Data Engineer
+            - group:gcp-vf-de-ngbi-tst-gen-01-dataengineer@vodafone.com
+
+            # Datapublisher
+            - group:gcp-vf-de-ngbi-datapublisher@vodafone.com
+
+            # Compute Datafusion and Composer accounts
+            - serviceAccount:vf-comp-ns-de-tst-01@vf-de-ngbi-tst-gen-01.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ngbi-tst-datafusion-sa@vf-de-ngbi-tst-gen-01.iam.gserviceaccount.com
+            - serviceAccount:vf-df-dp-ns-de-tst-01@vf-de-ngbi-tst-gen-01.iam.gserviceaccount.com
+
+            # Dynamo tst
+            - serviceAccount:vf-de-ngbi-dh-dynamotst1-sa@vf-de-datahub.iam.gserviceaccount.com
+
+        bigquery:
+          key_type: bq
+          datasets:
+            - name: lake_edw_staging_tst_01_s
+            - name: lake_edw_integrated_tst_01_s
+            - name: lake_edw_reporting_tst_01_s
+      #### RAW BQ datasets ####
+            - name: lake_raw_data_tst_01_s
+            - name: lake_temp_tst_01_s
+            - name: lake_suspended_tst_01_s
+            - name: lake_reject_tst_01_s
+            - name: lake_orchestration_tst_01_s
+      #### END Zeta_tst_01 ####
+
+
+      #### BEGIN Zeta_pprd_01 ####
+      nucleus_all_buckets_zeta_pprd_01:
+        permissions:
+          readers:
+          #give the storage transfer service in vf-de-ngbi-pprd-gen-01 project permission to write data into datahub
+            - serviceAccount:service-562986930944@gcp-sa-datafusion.iam.gserviceaccount.com
+
+          writers:
+            # This service account will help data transfer between local market on-premise and cloud
+            - serviceAccount:vf-de-ngbi-dh-dmaapingpprd2-sa@vf-de-datahub.iam.gserviceaccount.com
+
+            # Compute Datafusion and Composer accounts
+            - serviceAccount:vf-comp-ns-de-pprd-01@vf-de-ngbi-pprd-gen-01.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ngbi-pprd-datafusion-sa@vf-de-ngbi-pprd-gen-01.iam.gserviceaccount.com
+            - serviceAccount:vf-df-dp-ns-de-pprd-01@vf-de-ngbi-pprd-gen-01.iam.gserviceaccount.com
+
+            # Data Engineer group
+            - group:gcp-vf-de-ngbi-pprd-gen-01-dataengineer@vodafone.com
+
+            # Dynamo pprd
+            - serviceAccount:vf-de-ngbi-dh-dynamopprd1-sa@vf-de-datahub.iam.gserviceaccount.com
+
+        storage:
+          key_type: base
+          buckets:
+            - name: rawingested-dmaap-pprd-01
+            - name: ngbi-rawprepared-pprd-01
+            - name: cim-pprd-01
+            - name: rejected-pprd-01
+            - name: suspended-pprd-01
+
+      nucleus_bq_zeta_pprd_01:
+        permissions:
+          readers:
+          #give the storage transfer service in vf-de-ngbi-pprd-gen-01 project permission to write data into datahub
+            - serviceAccount:service-562986930944@gcp-sa-datafusion.iam.gserviceaccount.com
+
+
+          writers:
+            # Data Engineer Group
+            - group:gcp-vf-de-ngbi-pprd-gen-01-dataengineer@vodafone.com
+
+            # Qlik
+            - serviceAccount:bq-de-nucleus-poc@vf-grp-ngbi-pprd-svcs-01.iam.gserviceaccount.com
+
+            # Compute Datafusion and Composer accounts
+            - serviceAccount:vf-comp-ns-de-pprd-01@vf-de-ngbi-pprd-gen-01.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ngbi-pprd-datafusion-sa@vf-de-ngbi-pprd-gen-01.iam.gserviceaccount.com
+            - serviceAccount:vf-df-dp-ns-de-pprd-01@vf-de-ngbi-pprd-gen-01.iam.gserviceaccount.com
+
+            # Dynamo pprd
+            - serviceAccount:vf-de-ngbi-dh-dynamopprd1-sa@vf-de-datahub.iam.gserviceaccount.com
+
+        bigquery:
+          key_type: bq
+          datasets:
+            - name: lake_edw_staging_pprd_01_s
+            - name: lake_edw_integrated_pprd_01_s
+            - name: lake_edw_reporting_pprd_01_s
+      #### RAW BQ datasets ####
+            - name: lake_raw_data_pprd_01_s
+            - name: lake_temp_pprd_01_s
+            - name: lake_suspended_pprd_01_s
+            - name: lake_reject_pprd_01_s
+            - name: lake_orchestration_pprd_01_s
+      #### END Zeta_pprd_01 ####
+
+      #### BEGIN Zeta_prd_01 ####
+      nucleus_all_buckets_zeta_prd_01:
+        permissions:
+          readers:
+            - serviceAccount:service-928477608033@gcp-sa-datafusion.iam.gserviceaccount.com
+
+            # Operation team for checking tasks
+            - group:gcp-vf-de-nucleus-gcp-vf-de-ngbi-prd-gen-01-operation@vodafone.com
+
+          writers:
+            # Compute Datafusion and Composer accounts
+            - serviceAccount:vf-comp-ns-de-prd-01@vf-de-ngbi-prd-gen-01.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ngbi-prd-datafusion-sa@vf-de-ngbi-prd-gen-01.iam.gserviceaccount.com
+            - serviceAccount:vf-df-dp-ns-de-prd-01@vf-de-ngbi-prd-gen-01.iam.gserviceaccount.com
+
+            # Data Engineer group
+            - group:gcp-vf-de-ngbi-prd-gen-01-dataengineer@vodafone.com
+
+            # Dynamo prd
+            - serviceAccount:vf-de-ngbi-dh-dynamoprd1-sa@vf-de-datahub.iam.gserviceaccount.com
+
+        storage:
+          key_type: base
+          buckets:
+            - name: rawingested-dmaap-prd-01
+            - name: ngbi-rawprepared-prd-01
+            - name: cim-prd-01
+            - name: rejected-prd-01
+            - name: suspended-prd-01
+
+      nucleus_bq_zeta_prd_01:
+        permissions:
+          readers:
+            - serviceAccount:service-928477608033@gcp-sa-datafusion.iam.gserviceaccount.com
+            - group:gcp-vf-de-ngbi-prd-dfbq_reader@vodafone.com
+
+            #Qlik
+            - serviceAccount:bq-de-nucleus-poc@vf-grp-ngbi-pprd-svcs-01.iam.gserviceaccount.com
+
+          writers:
+            # Compute Devops lead. Allows for smoke test
+            - group:gcp-vf-de-ngbi-prd-gen-01-dataengineer@vodafone.com
+
+            #Qlik
+            - serviceAccount:bq-de-nucleus-poc@vf-grp-ngbi-prd-svcs-01.iam.gserviceaccount.com
+
+            # Compute Datafusion and Composer accounts
+            - serviceAccount:vf-comp-ns-de-prd-01@vf-de-ngbi-prd-gen-01.iam.gserviceaccount.com
+            - serviceAccount:vf-de-ngbi-prd-datafusion-sa@vf-de-ngbi-prd-gen-01.iam.gserviceaccount.com
+            - serviceAccount:vf-df-dp-ns-de-prd-01@vf-de-ngbi-prd-gen-01.iam.gserviceaccount.com
+
+            # Dynamo prd
+            - serviceAccount:vf-de-ngbi-dh-dynamoprd1-sa@vf-de-datahub.iam.gserviceaccount.com
+
+            - group:gcp-vf-de-ngbi-prd-dfbq_readerwriter@vodafone.com
+
+            # Operation team for checking tasks
+            - group:gcp-vf-de-nucleus-gcp-vf-de-ngbi-prd-gen-01-operation@vodafone.com
+
+        bigquery:
+          key_type: bq
+          datasets:
+            - name: lake_edw_staging_prd_01_s
+            - name: lake_edw_integrated_prd_01_s
+            - name: lake_edw_reporting_prd_01_s
+      #### RAW BQ datasets ####
+            - name: lake_raw_data_prd_01_s
+            - name: lake_temp_prd_01_s
+            - name: lake_suspended_prd_01_s
+            - name: lake_reject_prd_01_s
+            - name: lake_orchestration_prd_01_s
+      #### END Zeta_prd_01 ####
+
+
+      ## MC2 Start ##
+      # MC2CP
+      processed_mc2:
+        bigquery:
+          datasets:
+            - name: lake_mc2_processed_s
+        permissions:
+          writers:
+            - group:gcp-vf-grp-mc2-ops@vodafone.com
+
+      presentation_processed_mc2:
+        bigquery:
+          datasets:
+            - name: lake_mc2_presentation_processed_s
+            - name: model_mc2_aa_processed_s
+            - name: model_mc2_presentation_processed_s
+        permissions:
+          readers:
+            - serviceAccount:bq-de-mc2@vf-grp-ngbi-pprd-svcs-01.iam.gserviceaccount.com
+            - serviceAccount:bq-de-mc2@vf-grp-ngbi-prd-svcs-01.iam.gserviceaccount.com
+          writers:
+            - group:gcp-vf-grp-mc2-ops@vodafone.com
+
+      # MC2ET
+      rawprepared_mc2et:
+        storage:
+          buckets:
+            - name: mc2et-aa-processed
+
+      presentation_processed_mc2et:
+        permissions:
+          readers:
+            - serviceAccount:bq-de-mc2@vf-grp-ngbi-pprd-svcs-01.iam.gserviceaccount.com
+            - serviceAccount:bq-de-mc2@vf-grp-ngbi-prd-svcs-01.iam.gserviceaccount.com
+        bigquery:
+          datasets:
+            - name: lake_mc2et_processed_s
+            - name: model_mc2et_aa_processed_s
+            - name: lake_mc2et_presentation_processed_s
+
+      # Sherlock bigquery view dataset
+      rawprepared_uni_network_bq_custom:
+        bigquery:
+          datasets:
+            - name: mart_tdq_v
+          key_type: bq
+        permissions:
+          readers:
+            - group:gcp-vf-de-ca-dataengineers@vodafone.com
+            - serviceAccount:bq-de-tdq@vf-grp-ngbi-pprd-svcs-01.iam.gserviceaccount.com
+            - serviceAccount:bq-de-tdq@vf-grp-ngbi-prd-svcs-01.iam.gserviceaccount.com
+          writers:
+            - group:gcp-vf-de-devops@vodafone.com
+
+      ## MC2 END ##
+
+
+    ####### One Data Lake #######
+
+      one_datalake_datasets_raw1:
+        bigquery:
+          datasets:
+           - name: lake_raw__initial_load__s
+           - name: lake_raw__staging__s
+           - name: lake_raw__overflow__s
+           - name: lake_raw__history__s
+        permissions:
+          readers:
+            - serviceAccount:vf-de-newco-prod-dyn-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-newco-prod-air-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - group:gcp-vf-de-bit-gov-all-all@vodafone.com
+          writers:
+            - group:gcp-vf-de-devops@vodafone.com
+            - group:gcp-vf-de-bit-admin-all-all@vodafone.com
+            - serviceAccount:vf-de-newco-prod-dyn-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-newco-prod-air-sa@vf-de-ca-live.iam.gserviceaccount.com
+
+      one_datalake_datasets_raw2:
+        bigquery:
+          datasets:
+           - name: lake_raw__scd2__s
+           - name: lake_raw__one2one__s
+           - name: lake_raw__current__s
+        permissions:
+          readers:
+            - group:gcp-vf-de-bit-gov-all-all@vodafone.com
+            - group:gcp-vf-de-bit-user-lake-raw@vodafone.com
+            - group:gcp-vf-de-bit-sa-all-all@vodafone.com
+            - serviceAccount:vf-de-newco-prod-air-sa@vf-de-ca-live.iam.gserviceaccount.com
+          writers:
+            - group:gcp-vf-de-devops@vodafone.com
+            - group:gcp-vf-de-bit-admin-all-all@vodafone.com
+            - serviceAccount:vf-de-newco-prod-air-sa@vf-de-ca-live.iam.gserviceaccount.com
+
+      one_datalake_datasets_raw3:
+        bigquery:
+          datasets:
+           - name: lake_raw__ops__s
+        permissions:
+          readers:
+            - group:gcp-vf-de-ca-nextart@vodafone.com
+            - serviceAccount:vf-de-newco-prod-air-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-newco-prod-dyn-sa@vf-de-ca-live.iam.gserviceaccount.com
+          writers:
+            - group:gcp-vf-de-devops@vodafone.com
+            - serviceAccount:vf-de-newco-prod-air-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-newco-prod-dyn-sa@vf-de-ca-live.iam.gserviceaccount.com
+
+      one_datalake_datasets_edw_staging:
+        bigquery:
+          datasets:
+           - name: lake_edw__core_staging__s
+           - name: lake_edw__semantic_staging__s
+           - name: lake_edw__semantic__s
+        permissions:
+          readers:
+            - group:gcp-vf-de-bit-gov-all-all@vodafone.com
+            - serviceAccount:vf-de-newco-prod-air-sa@vf-de-ca-live.iam.gserviceaccount.com
+          writers:
+            - group:gcp-vf-de-devops@vodafone.com
+            - group:gcp-vf-de-bit-admin-all-all@vodafone.com
+            - serviceAccount:vf-de-newco-prod-air-sa@vf-de-ca-live.iam.gserviceaccount.com
+
+      one_datalake_datasets_edw_core:
+        bigquery:
+          datasets:
+           - name: lake_edw__core__s
+        permissions:
+          readers:
+            - group:gcp-vf-de-bit-gov-all-all@vodafone.com
+            - group:gcp-vf-de-bit-sa-all-all@vodafone.com
+            - serviceAccount:vf-de-newco-prod-air-sa@vf-de-ca-live.iam.gserviceaccount.com
+          writers:
+            - group:gcp-vf-de-devops@vodafone.com
+            - serviceAccount:vf-de-newco-prod-air-sa@vf-de-ca-live.iam.gserviceaccount.com
+
+      one_datalake_datasets_edw_access:
+        bigquery:
+          datasets:
+           - name: lake_edw__semantic_access__s
+        permissions:
+          readers:
+            - group:gcp-vf-de-bit-gov-all-all@vodafone.com
+            - group:gcp-vf-de-bit-user-dwh-semantic@vodafone.com
+            - group:gcp-vf-de-bit-sa-all-all@vodafone.com
+            #will be deleted by 31.01.2023
+            - serviceAccount:vf-de-vtv-tbl-sa@vf-de-bi-nonlive.iam.gserviceaccount.com
+            - serviceAccount:vf-de-newco-prod-air-sa@vf-de-ca-live.iam.gserviceaccount.com
+          writers:
+            - group:gcp-vf-de-devops@vodafone.com
+            - group:gcp-vf-de-bit-admin-all-all@vodafone.com
+            - serviceAccount:vf-de-newco-prod-air-sa@vf-de-ca-live.iam.gserviceaccount.com
+
+      one_datalake_datasets_ops:
+        bigquery:
+          datasets:
+           - name: lake_ops__meta_data__s
+        permissions:
+          readers:
+            - group:gcp-vf-de-bit-gov-all-all@vodafone.com
+            - serviceAccount:vf-de-newco-prod-air-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-newco-prod-dyn-sa@vf-de-ca-live.iam.gserviceaccount.com
+          writers:
+            - group:gcp-vf-de-devops@vodafone.com
+            - group:gcp-vf-de-bit-admin-all-all@vodafone.com
+            - serviceAccount:vf-de-newco-prod-air-sa@vf-de-ca-live.iam.gserviceaccount.com
+            - serviceAccount:vf-de-newco-prod-dyn-sa@vf-de-ca-live.iam.gserviceaccount.com
+
+    ####### One Data Lake End #######
+
+
+    service_account_list:
+
+      #### SA DMaap DEV ####
+      - sa_desc: DMaaP ingest dev2
+        sa_sub_str: dmaapingdev2
+        program: ngbi
+
+      #### SA DMaap TST ####
+      - sa_desc: DMaaP ingest tst2
+        sa_sub_str: dmaapingtst2
+        program: ngbi
+
+      #### SA DMaap PPRD ####
+      - sa_desc: DMaaP ingest pprd2
+        sa_sub_str: dmaapingpprd2
+        program: ngbi
+
+      #### SA DMaap PRD ####
+      - sa_desc: DMaaP ingest prd2
+        sa_sub_str: dmaapingprd2
+        program: ngbi
+
+
+      #### SA Dynamo DEV ####
+      - sa_desc: Dynamo ingest dev1
+        sa_sub_str: dynamodev1
+        program: ngbi
+
+      #### SA Dynamo TST ####
+      - sa_desc: Dynamo ingest tst1
+        sa_sub_str: dynamotst1
+        program: ngbi
+
+      #### SA Dynamo PPRD ####
+      - sa_desc: Dynamo ingest pprd1
+        sa_sub_str: dynamopprd1
+        program: ngbi
+
+      #### SA Dynamo PRD ####
+      - sa_desc: Dynamo ingest prd1
+        sa_sub_str: dynamoprd1
+        program: ngbi
+
+       #### Dynofi SA Cloud Analytics Test ####
+      - sa_desc: SA for Dynofi to ingest data for smoketests
+        sa_sub_str: dynofi-ing-smk
+        program: ca
+
+       #### Dynofi SA Cloud Analytics Prod ####
+      - sa_desc: SA for Dynofi to ingest data for production
+        sa_sub_str: dynofi-ing-prd
+        program: ca
+
+      #this SA is being used for ingestion from mozart. Amrita Pandit is contact for this
+      - sa_desc: SA for ingesting data from mozart for the nextart team
+        sa_sub_str: dyn-debi
+        program: ngbi
+
+  - name: project_iam_members
+    org_biq_query_job_users:
+      #qlik
+      - serviceAccount:bq-de-qualitics@vf-grp-ngbi-pprd-svcs-01.iam.gserviceaccount.com
+      - serviceAccount:bq-de-qualitics@vf-grp-ngbi-prd-svcs-01.iam.gserviceaccount.com
+      #vf-de-ca-live
+      - serviceAccount:vf-de-ca-proda-df-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+      - serviceAccount:vf-de-ca-prodb-df-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+      - serviceAccount:vf-de-ca-proda-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+      - serviceAccount:vf-de-ca-prodb-dp-ops-sa@vf-de-ca-live.iam.gserviceaccount.com
+
+    ### BEGIN DE Zeta ###
+    #### Begin: zeta_dev_01####
+        #vf-de-ngbi-dev-gen-01 project
+      - serviceAccount:service-964419709160@gcp-sa-datafusion.iam.gserviceaccount.com
+
+      # Compute Datafusion and Composer accounts
+      - serviceAccount:vf-comp-ns-de-dev-01@vf-de-ngbi-dev-gen-01.iam.gserviceaccount.com
+      - serviceAccount:vf-de-ngbi-dev-datafusion-sa@vf-de-ngbi-dev-gen-01.iam.gserviceaccount.com
+      - serviceAccount:vf-df-dp-ns-de-dev-01@vf-de-ngbi-dev-gen-01.iam.gserviceaccount.com
+
+      #### org_query_job. End: zeta_dev_01 ####
+
+      #### org_query_job. Begin: zeta_tst_01####
+
+      # Compute Datafusion and Composer accounts
+      - serviceAccount:vf-comp-ns-de-tst-01@vf-de-ngbi-tst-gen-01.iam.gserviceaccount.com
+      - serviceAccount:vf-de-ngbi-tst-datafusion-sa@vf-de-ngbi-tst-gen-01.iam.gserviceaccount.com
+      - serviceAccount:vf-df-dp-ns-de-tst-01@vf-de-ngbi-tst-gen-01.iam.gserviceaccount.com
+      # Data wrangler
+        #vf-de-ngbi-tst-gen-01 project
+      - serviceAccount:service-799379265197@gcp-sa-datafusion.iam.gserviceaccount.com
+      # Golden Source Team
+      - serviceAccount:bq-de-nucleus-poc@vf-grp-ngbi-prd-svcs-01.iam.gserviceaccount.com
+      - serviceAccount:bq-de-nucleus-poc@vf-grp-ngbi-pprd-svcs-01.iam.gserviceaccount.com
+
+      #### org_query_job. End: zeta_tst_01 ####
+
+      #### org_query_job. Begin: zeta_pprd_01####
+
+      # Compute Datafusion and Composer accounts
+      - serviceAccount:vf-comp-ns-de-pprd-01@vf-de-ngbi-pprd-gen-01.iam.gserviceaccount.com
+      - serviceAccount:vf-de-ngbi-pprd-datafusion-sa@vf-de-ngbi-pprd-gen-01.iam.gserviceaccount.com
+      - serviceAccount:vf-df-dp-ns-de-pprd-01@vf-de-ngbi-pprd-gen-01.iam.gserviceaccount.com
+      # Data wrangler
+        #vf-de-ngbi-pprd-gen-01 project
+      - serviceAccount:service-562986930944@gcp-sa-datafusion.iam.gserviceaccount.com
+
+      #### org_query_job. End: zeta_pprd_01 ####
+
+      #### org_query_job. Begin: zeta_prd_01####
+
+      # Compute Datafusion and Composer accounts
+      - serviceAccount:vf-comp-ns-de-prd-01@vf-de-ngbi-prd-gen-01.iam.gserviceaccount.com
+      - serviceAccount:vf-de-ngbi-prd-datafusion-sa@vf-de-ngbi-prd-gen-01.iam.gserviceaccount.com
+      - serviceAccount:vf-df-dp-ns-de-prd-01@vf-de-ngbi-prd-gen-01.iam.gserviceaccount.com
+      # Data wrangler
+      - serviceAccount:service-928477608033@gcp-sa-datafusion.iam.gserviceaccount.com
+
+      #### org_query_job. End: zeta_prd_01 ####
+
+      ## MC2
+      - serviceAccount:bq-de-mc2@vf-grp-ngbi-pprd-svcs-01.iam.gserviceaccount.com
+      - serviceAccount:bq-de-mc2@vf-grp-ngbi-prd-svcs-01.iam.gserviceaccount.com
+
+      - serviceAccount:vf-de-mc2cp-proda-dp-ops-sa@vf-grp-mc2compute-live.iam.gserviceaccount.com
+      - serviceAccount:vf-de-mc2cp-prodb-dp-ops-sa@vf-grp-mc2compute-live.iam.gserviceaccount.com
+
+      - serviceAccount:vf-de-mc2et-proda-dp-ops-sa@vf-grp-mc2compute-live.iam.gserviceaccount.com
+      - serviceAccount:vf-de-mc2et-prodb-dp-ops-sa@vf-grp-mc2compute-live.iam.gserviceaccount.com
+
+      # Dynamo dev CDAP on prem
+      - serviceAccount:vf-de-ngbi-dh-dynamodev1-sa@vf-de-datahub.iam.gserviceaccount.com
+
+      # Dynamo tst CDAP on prem
+      - serviceAccount:vf-de-ngbi-dh-dynamotst1-sa@vf-de-datahub.iam.gserviceaccount.com
+
+      # Dynamo pprd CDAP on prem
+      - serviceAccount:vf-de-ngbi-dh-dynamopprd1-sa@vf-de-datahub.iam.gserviceaccount.com
+
+      # Dynamo prd CDAP on prem
+      - serviceAccount:vf-de-ngbi-dh-dynamoprd1-sa@vf-de-datahub.iam.gserviceaccount.com
+
+      #Dynamo onprem from Mozart
+      - serviceAccount:vf-de-ngbi-dh-dyn-debi-sa@vf-de-datahub.iam.gserviceaccount.com
+
+      # AI Booster Service Agents (for Batch Prediction)
+      # vf-de-aib-prd-cmr-chn-live Vertex AI Agent Service Account
+      - serviceAccount:service-838772327923@gcp-sa-aiplatform.iam.gserviceaccount.com
+      # vf-de-aib-prd-cmr-rcd-live Vertex AI Agent Service Account
+      - serviceAccount:service-177542485030@gcp-sa-aiplatform.iam.gserviceaccount.com
+      # vf-de-aib-prd-cmr-nps-live Vertex AI Agent Service Account
+      - serviceAccount:service-1027542014000@gcp-sa-aiplatform.iam.gserviceaccount.com
+      
+      # Collibra (Structural Metadata Ingestion as per ACR522)
+      - serviceAccount:vf-de-dgov-collibra-dev-bq-sa@vf-de-dgov-dev-col-01.iam.gserviceaccount.com
+
+    org_bucket_viewers:
+      # Added for DE Zeta
+      - group:gcp-vf-dev-nucleus-platformengineers@vodafone.com
+      #### Begin: zeta_dev_01####
+        #vf-de-ngbi-dev-gen-01 project
+      - serviceAccount:service-964419709160@gcp-sa-datafusion.iam.gserviceaccount.com
+      # This service account will help data transfer between local market on-premise and cloud
+      - serviceAccount:vf-de-ngbi-dh-dmaapingdev2-sa@vf-de-datahub.iam.gserviceaccount.com
+      # Compute Datafusion and Composer accounts
+      - serviceAccount:vf-comp-ns-de-dev-01@vf-de-ngbi-dev-gen-01.iam.gserviceaccount.com
+      - serviceAccount:vf-de-ngbi-dev-datafusion-sa@vf-de-ngbi-dev-gen-01.iam.gserviceaccount.com
+      - serviceAccount:vf-df-dp-ns-de-dev-01@vf-de-ngbi-dev-gen-01.iam.gserviceaccount.com
+
+      - group:gcp-vf-de-ngbi-dev-gen-01-dataengineer@vodafone.com
+
+      # Dynamo dev
+      - serviceAccount:vf-de-ngbi-dh-dynamodev1-sa@vf-de-datahub.iam.gserviceaccount.com
+
+      #### End: zeta_dev_01 ####
+
+      #### Begin: zeta_tst_01####
+      - serviceAccount:vf-de-ngbi-dh-dmaapingtst2-sa@vf-de-datahub.iam.gserviceaccount.com
+      # Data wrangler
+      #vf-de-ngbi-tst-gen-01 project
+      - serviceAccount:service-799379265197@gcp-sa-datafusion.iam.gserviceaccount.com
+      # TstUser
+      - group:gcp-vf-de-ngbi-tstuser@vodafone.com
+      # Datapublisher
+      - group:gcp-vf-de-ngbi-datapublisher@vodafone.com
+      # Compute Datafusion and Composer accounts
+      - serviceAccount:vf-comp-ns-de-tst-01@vf-de-ngbi-tst-gen-01.iam.gserviceaccount.com
+      - serviceAccount:vf-de-ngbi-tst-datafusion-sa@vf-de-ngbi-tst-gen-01.iam.gserviceaccount.com
+      - serviceAccount:vf-df-dp-ns-de-tst-01@vf-de-ngbi-tst-gen-01.iam.gserviceaccount.com
+      #Dynamo tst
+      - serviceAccount:vf-de-ngbi-dh-dynamotst1-sa@vf-de-datahub.iam.gserviceaccount.com
+
+      #### org_bucket_viewers. End: zeta_tst_01 ####
+
+      #### Begin: zeta_pprd_01####
+      - group:gcp-vf-de-ngbi-pprd-gen-01-dataengineer@vodafone.com
+      - serviceAccount:vf-de-ngbi-dh-dmaapingpprd2-sa@vf-de-datahub.iam.gserviceaccount.com
+      # Data wrangler
+        #vf-de-ngbi-pprd-gen-01 project
+      - serviceAccount:service-562986930944@gcp-sa-datafusion.iam.gserviceaccount.com
+      # Compute Datafusion and Composer accounts
+      - serviceAccount:vf-comp-ns-de-pprd-01@vf-de-ngbi-pprd-gen-01.iam.gserviceaccount.com
+      - serviceAccount:vf-de-ngbi-pprd-datafusion-sa@vf-de-ngbi-pprd-gen-01.iam.gserviceaccount.com
+      - serviceAccount:vf-df-dp-ns-de-pprd-01@vf-de-ngbi-pprd-gen-01.iam.gserviceaccount.com
+      #Dynamo pprd
+      - serviceAccount:vf-de-ngbi-dh-dynamopprd1-sa@vf-de-datahub.iam.gserviceaccount.com
+      #### org_bucket_viewers. End: zeta_pprd_01 ####
+      #### Begin: zeta_prd_01####
+      # Data wrangler
+      - serviceAccount:service-928477608033@gcp-sa-datafusion.iam.gserviceaccount.com
+      # Compute Datafusion and Composer accounts
+      - serviceAccount:vf-comp-ns-de-prd-01@vf-de-ngbi-prd-gen-01.iam.gserviceaccount.com
+      - serviceAccount:vf-de-ngbi-prd-datafusion-sa@vf-de-ngbi-prd-gen-01.iam.gserviceaccount.com
+      - serviceAccount:vf-df-dp-ns-de-prd-01@vf-de-ngbi-prd-gen-01.iam.gserviceaccount.com
+
+      #Dynamo prd
+      - serviceAccount:vf-de-ngbi-dh-dynamoprd1-sa@vf-de-datahub.iam.gserviceaccount.com
+      #### org_bucket_viewers. End: zeta_prd_01 ####
+      ## MC2
+      - serviceAccount:vf-grp-mc2cp-proda-comp-sa@vf-grp-mc2compute-live.iam.gserviceaccount.com
+      - serviceAccount:vf-grp-mc2cp-dev-comp-sa@vf-grp-mc2compute-nonlive.iam.gserviceaccount.com
+  - source: git::https://github.vodafone.com/VFGroup-CloudAnalytics/terrraform-modules.git//project_role_members?ref=project_role_members_v1.2.0
+    name: project_iam
+    project_name: "${var.project_id}"
+    member_roles:
+      "serviceAccount:vf-de-ca-preprod-comp-sa@vf-de-ca-lab.iam.gserviceaccount.com":
+        - "roles/bigquery.metadataViewer"
+      "serviceAccount:vf-de-ca-dev-comp-sa@vf-de-ca-lab.iam.gserviceaccount.com":
+        - "roles/bigquery.metadataViewer"
+      "serviceAccount:vf-de-ca-qa-comp-sa@vf-de-ca-lab.iam.gserviceaccount.com":
+        - "roles/bigquery.metadataViewer"
+      "serviceAccount:vf-de-ca-prodb-comp-sa@vf-de-ca-live.iam.gserviceaccount.com":
+        - "roles/bigquery.metadataViewer"
+      "serviceAccount:de-ca-proda-comp2-sa@vf-de-ca-live.iam.gserviceaccount.com":
+        - "roles/bigquery.metadataViewer"
+      "serviceAccount:vf-de-ca-proda-comp-sa@vf-de-ca-live.iam.gserviceaccount.com":
+        - "roles/bigquery.metadataViewer"
+      "serviceAccount:vf-de-ca-qa-comp-sa@vf-de-ca-nonlive.iam.gserviceaccount.com":
+        - "roles/bigquery.metadataViewer"
+      "serviceAccount:vf-de-ca-preprod-comp-sa@vf-de-ca-nonlive.iam.gserviceaccount.com":
+        - "roles/bigquery.metadataViewer"
+      "serviceAccount:vf-de-ca-dev-comp-sa@vf-de-ca-nonlive.iam.gserviceaccount.com":
+        - "roles/bigquery.metadataViewer"
+      "serviceAccount:de-ca-dev-comp2-sa@vf-de-ca-nonlive.iam.gserviceaccount.com":
+        - "roles/bigquery.metadataViewer"
+      "serviceAccount:vf-de-dgov-collibra-dev-bq-sa@vf-de-dgov-dev-col-01.iam.gserviceaccount.com":
+        - "roles/bigquery.metadataViewer"
+        - "roles/bigquery.readSessionUser"
+      "group:gcp-vf-de-devops@vodafone.com":
+        - "roles/servicemanagement.quotaAdmin"
+        - "organizations/352790554748/roles/BigQueryReservation"
+        - "organizations/352790554748/roles/bigqueryjobops"
+        - "roles/iam.serviceAccountKeyAdmin"
+
+      "group:gcp-vf-de-ca-bqops@vodafone.com":
+        - "roles/servicemanagement.quotaAdmin"
+        - "organizations/352790554748/roles/BigQueryReservation"
+
+      "group:gcp-vf-de-ca-dataengineers@vodafone.com":
+        - "roles/bigquery.metadataViewer"
+  
+  - source: git::https://github.vodafone.com/VFGroup-CloudAnalytics/terrraform-modules.git//service_account?ref=service_account_v1.1.0
+    name: service_account_featurestore
+    id: "featurestore"
+    display_name: "Feature Store deployment pipeline SA."
+    description: "Feature Store deployment pipeline SA. Access Keys automatically managed by Vault."
+    project_name: "${var.project_id}"
+    project_role_ids: ["roles/aiplatform.featurestoreUser"]
+    service_account_key_admins: ["serviceAccount:vault-as-service@vf-grp-gvp-live.iam.gserviceaccount.com"]
